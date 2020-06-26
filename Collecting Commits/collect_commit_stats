@@ -10,8 +10,8 @@ class RetrvCommitStats():
             self.repo_id = repo_id
             self.repo_url = repo_url
 
-            self.username = "acielecki"
-            self.token = "369e1093422f763f2745348139a4762218f62848"
+            self.username = "*******"
+            self.token = "****************************"
 
             self.commit_stats = []
 
