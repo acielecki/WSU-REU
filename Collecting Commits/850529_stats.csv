@@ -1,0 +1,2469 @@
+filename,status,additions,deletions,changes,patch,contents_url
+.travis.yml,modified,1,4,5,"@@ -1,10 +1,7 @@
+ language: go
+ go:
+-  - 1.7
+-  - 1.8
++  - 1.x
+ sudo: false
+-install:
+-  - go get github.com/bmizerany/assert
+ notifications:
+   email: false
+ ",https://api.github.com/repos/jehiah/json2csv/contents/.travis.yml?ref=de1f85986baab711ea141f4e8573628d4e8f0258
+README.md,modified,1,1,2,"@@ -3,7 +3,7 @@ json2csv
+ 
+ Converts a stream of newline separated json data to csv format.
+ 
+-[![Build Status](https://travis-ci.org/jehiah/json2csv.png?branch=master)](https://travis-ci.org/jehiah/json2csv)
++[![Build Status](https://travis-ci.org/jehiah/json2csv.png?branch=master)](https://travis-ci.org/jehiah/json2csv) [![GitHub release](https://img.shields.io/github/release/jehiah/json2csv.svg)](https://github.com/jehiah/json2csv/releases/latest)
+ 
+ 
+ Installation",https://api.github.com/repos/jehiah/json2csv/contents/README.md?ref=de1f85986baab711ea141f4e8573628d4e8f0258
+dist.sh,modified,6,4,10,"@@ -7,7 +7,7 @@ DIR=""$(cd ""$(dirname ""${BASH_SOURCE[0]}"")"" && pwd)""
+ echo ""working dir $DIR""
+ 
+ echo ""... running tests""
+-go test|| exit 1
++go test ./... || exit 1
+ 
+ arch=$(go env GOARCH)
+ version=$(cat $DIR/version.go | grep ""const VERSION"" | awk '{print $NF}' | sed 's/""//g')
+@@ -17,15 +17,17 @@ for os in linux darwin; do
+     echo ""... building v$version for $os/$arch""
+     BUILD=$(mktemp -d -t json2csv)
+     TARGET=""json2csv-$version.$os-$arch.$goversion""
+-    GOOS=$os GOARCH=$arch CGO_ENABLED=0 go build
+     mkdir -p $BUILD/$TARGET
+-    cp json2csv $BUILD/$TARGET/json2csv
++    GOOS=$os GOARCH=$arch CGO_ENABLED=0 go build -o $BUILD/$TARGET/json2csv
++
+     pushd $BUILD >/dev/null
+     tar czvf $TARGET.tar.gz $TARGET
+     if [ -e $DIR/dist/$TARGET.tar.gz ]; then
+         echo ""... WARNING overwriting dist/$TARGET.tar.gz""
+     fi
+-    mv $TARGET.tar.gz $DIR/dist
++
++    mkdir -p $DIR/dist
++    mv $TARGET.tar.gz $DIR/dist/
+     echo ""... built dist/$TARGET.tar.gz""
+     popd >/dev/null
+ done
+\ No newline at end of file",https://api.github.com/repos/jehiah/json2csv/contents/dist.sh?ref=de1f85986baab711ea141f4e8573628d4e8f0258
+go.mod,added,5,0,5,"@@ -0,0 +1,5 @@
++module github.com/jehiah/json2csv
++
++go 1.13
++
++require github.com/stretchr/testify v1.4.0",https://api.github.com/repos/jehiah/json2csv/contents/go.mod?ref=de1f85986baab711ea141f4e8573628d4e8f0258
+go.sum,added,11,0,11,"@@ -0,0 +1,11 @@
++github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
++github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
++github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
++github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
++github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
++github.com/stretchr/testify v1.4.0 h1:2E4SXV/wtOkTonXsotYi4li6zVWxYlZuYNCXe9XRJyk=
++github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
++gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
++gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
++gopkg.in/yaml.v2 v2.2.2 h1:ZCJp+EgiOT7lHqUV2J862kp8Qj64Jo6az82+3Td9dZw=
++gopkg.in/yaml.v2 v2.2.2/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=",https://api.github.com/repos/jehiah/json2csv/contents/go.sum?ref=de1f85986baab711ea141f4e8573628d4e8f0258
+main.go,modified,2,1,3,"@@ -10,6 +10,7 @@ import (
+ 	""log""
+ 	""math""
+ 	""os""
++	""runtime""
+ 	""strings""
+ 	""unicode/utf8""
+ )
+@@ -29,7 +30,7 @@ func main() {
+ 	flag.Parse()
+ 
+ 	if *showVersion {
+-		fmt.Printf(""json2csv %s\n"", VERSION)
++		fmt.Printf(""json2csv v%s (built w/%s)\n"", VERSION, runtime.Version())
+ 		return
+ 	}
+ ",https://api.github.com/repos/jehiah/json2csv/contents/main.go?ref=de1f85986baab711ea141f4e8573628d4e8f0258
+main_test.go,modified,1,1,2,"@@ -8,7 +8,7 @@ import (
+ 	""os""
+ 	""testing""
+ 
+-	""github.com/bmizerany/assert""
++	""github.com/stretchr/testify/assert""
+ )
+ 
+ func TestGetTopic(t *testing.T) {",https://api.github.com/repos/jehiah/json2csv/contents/main_test.go?ref=de1f85986baab711ea141f4e8573628d4e8f0258
+version.go,modified,1,1,2,"@@ -1,3 +1,3 @@
+ package main
+ 
+-const VERSION = ""1.2.0""
++const VERSION = ""1.2.1""",https://api.github.com/repos/jehiah/json2csv/contents/version.go?ref=de1f85986baab711ea141f4e8573628d4e8f0258
+.travis.yml,modified,1,4,5,"@@ -1,10 +1,7 @@
+ language: go
+ go:
+-  - 1.7
+-  - 1.8
++  - 1.x
+ sudo: false
+-install:
+-  - go get github.com/bmizerany/assert
+ notifications:
+   email: false
+ ",https://api.github.com/repos/jehiah/json2csv/contents/.travis.yml?ref=75d51def6b60c07031db0b483a66eca7de38193e
+README.md,modified,1,1,2,"@@ -3,7 +3,7 @@ json2csv
+ 
+ Converts a stream of newline separated json data to csv format.
+ 
+-[![Build Status](https://travis-ci.org/jehiah/json2csv.png?branch=master)](https://travis-ci.org/jehiah/json2csv)
++[![Build Status](https://travis-ci.org/jehiah/json2csv.png?branch=master)](https://travis-ci.org/jehiah/json2csv) [![GitHub release](https://img.shields.io/github/release/jehiah/json2csv.svg)](https://github.com/jehiah/json2csv/releases/latest)
+ 
+ 
+ Installation",https://api.github.com/repos/jehiah/json2csv/contents/README.md?ref=75d51def6b60c07031db0b483a66eca7de38193e
+dist.sh,modified,6,4,10,"@@ -7,7 +7,7 @@ DIR=""$(cd ""$(dirname ""${BASH_SOURCE[0]}"")"" && pwd)""
+ echo ""working dir $DIR""
+ 
+ echo ""... running tests""
+-go test|| exit 1
++go test ./... || exit 1
+ 
+ arch=$(go env GOARCH)
+ version=$(cat $DIR/version.go | grep ""const VERSION"" | awk '{print $NF}' | sed 's/""//g')
+@@ -17,15 +17,17 @@ for os in linux darwin; do
+     echo ""... building v$version for $os/$arch""
+     BUILD=$(mktemp -d -t json2csv)
+     TARGET=""json2csv-$version.$os-$arch.$goversion""
+-    GOOS=$os GOARCH=$arch CGO_ENABLED=0 go build
+     mkdir -p $BUILD/$TARGET
+-    cp json2csv $BUILD/$TARGET/json2csv
++    GOOS=$os GOARCH=$arch CGO_ENABLED=0 go build -o $BUILD/$TARGET/json2csv
++
+     pushd $BUILD >/dev/null
+     tar czvf $TARGET.tar.gz $TARGET
+     if [ -e $DIR/dist/$TARGET.tar.gz ]; then
+         echo ""... WARNING overwriting dist/$TARGET.tar.gz""
+     fi
+-    mv $TARGET.tar.gz $DIR/dist
++
++    mkdir -p $DIR/dist
++    mv $TARGET.tar.gz $DIR/dist/
+     echo ""... built dist/$TARGET.tar.gz""
+     popd >/dev/null
+ done
+\ No newline at end of file",https://api.github.com/repos/jehiah/json2csv/contents/dist.sh?ref=75d51def6b60c07031db0b483a66eca7de38193e
+go.mod,added,5,0,5,"@@ -0,0 +1,5 @@
++module github.com/jehiah/json2csv
++
++go 1.13
++
++require github.com/stretchr/testify v1.4.0",https://api.github.com/repos/jehiah/json2csv/contents/go.mod?ref=75d51def6b60c07031db0b483a66eca7de38193e
+go.sum,added,11,0,11,"@@ -0,0 +1,11 @@
++github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
++github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
++github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
++github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
++github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
++github.com/stretchr/testify v1.4.0 h1:2E4SXV/wtOkTonXsotYi4li6zVWxYlZuYNCXe9XRJyk=
++github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
++gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
++gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
++gopkg.in/yaml.v2 v2.2.2 h1:ZCJp+EgiOT7lHqUV2J862kp8Qj64Jo6az82+3Td9dZw=
++gopkg.in/yaml.v2 v2.2.2/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=",https://api.github.com/repos/jehiah/json2csv/contents/go.sum?ref=75d51def6b60c07031db0b483a66eca7de38193e
+main.go,modified,2,1,3,"@@ -10,6 +10,7 @@ import (
+ 	""log""
+ 	""math""
+ 	""os""
++	""runtime""
+ 	""strings""
+ 	""unicode/utf8""
+ )
+@@ -29,7 +30,7 @@ func main() {
+ 	flag.Parse()
+ 
+ 	if *showVersion {
+-		fmt.Printf(""json2csv %s\n"", VERSION)
++		fmt.Printf(""json2csv v%s (built w/%s)\n"", VERSION, runtime.Version())
+ 		return
+ 	}
+ ",https://api.github.com/repos/jehiah/json2csv/contents/main.go?ref=75d51def6b60c07031db0b483a66eca7de38193e
+main_test.go,modified,1,1,2,"@@ -8,7 +8,7 @@ import (
+ 	""os""
+ 	""testing""
+ 
+-	""github.com/bmizerany/assert""
++	""github.com/stretchr/testify/assert""
+ )
+ 
+ func TestGetTopic(t *testing.T) {",https://api.github.com/repos/jehiah/json2csv/contents/main_test.go?ref=75d51def6b60c07031db0b483a66eca7de38193e
+version.go,modified,1,1,2,"@@ -1,3 +1,3 @@
+ package main
+ 
+-const VERSION = ""1.2.0""
++const VERSION = ""1.2.1""",https://api.github.com/repos/jehiah/json2csv/contents/version.go?ref=75d51def6b60c07031db0b483a66eca7de38193e
+.gitignore,modified,2,0,2,"@@ -1,4 +1,6 @@
+ json2csv
++dist
++build
+ 
+ # from https://github.com/github/gitignore/blob/master/Go.gitignore
+ ",https://api.github.com/repos/jehiah/json2csv/contents/.gitignore?ref=d40f54a3ed9c864fef7fede3cb7863d29b6d6fdd
+.travis.yml,modified,2,2,4,"@@ -1,7 +1,7 @@
+ language: go
+ go:
+-  - 1.5.3
+-  - 1.6
++  - 1.7
++  - 1.8
+ sudo: false
+ install:
+   - go get github.com/bmizerany/assert",https://api.github.com/repos/jehiah/json2csv/contents/.travis.yml?ref=d40f54a3ed9c864fef7fede3cb7863d29b6d6fdd
+README.md,modified,2,1,3,"@@ -9,6 +9,8 @@ Converts a stream of newline separated json data to csv format.
+ Installation
+ ============
+ 
++pre-built binaries are available under [releases](https://github.com/jehiah/json2csv/releases).
++
+ If you have a working golang install, you can use `go get`.
+ 
+ ```bash
+@@ -23,7 +25,6 @@ usage: json2csv
+     -k fields,and,nested.fields,to,output
+     -i /path/to/input.json (optional; default is stdin)
+     -o /path/to/output.csv (optional; default is stdout)
+-    -v verbose output (to stderr)
+     --version
+     -p print csv header row
+     -h This help",https://api.github.com/repos/jehiah/json2csv/contents/README.md?ref=d40f54a3ed9c864fef7fede3cb7863d29b6d6fdd
+dist.sh,added,31,0,31,"@@ -0,0 +1,31 @@
++#!/bin/bash
++
++# build binary distributions for linux/amd64 and darwin/amd64
++set -e 
++
++DIR=""$(cd ""$(dirname ""${BASH_SOURCE[0]}"")"" && pwd)""
++echo ""working dir $DIR""
++
++echo ""... running tests""
++go test|| exit 1
++
++arch=$(go env GOARCH)
++version=$(cat $DIR/version.go | grep ""const VERSION"" | awk '{print $NF}' | sed 's/""//g')
++goversion=$(go version | awk '{print $3}')
++
++for os in linux darwin; do
++    echo ""... building v$version for $os/$arch""
++    BUILD=$(mktemp -d -t json2csv)
++    TARGET=""json2csv-$version.$os-$arch.$goversion""
++    GOOS=$os GOARCH=$arch CGO_ENABLED=0 go build
++    mkdir -p $BUILD/$TARGET
++    cp json2csv $BUILD/$TARGET/json2csv
++    pushd $BUILD >/dev/null
++    tar czvf $TARGET.tar.gz $TARGET
++    if [ -e $DIR/dist/$TARGET.tar.gz ]; then
++        echo ""... WARNING overwriting dist/$TARGET.tar.gz""
++    fi
++    mv $TARGET.tar.gz $DIR/dist
++    echo ""... built dist/$TARGET.tar.gz""
++    popd >/dev/null
++done
+\ No newline at end of file",https://api.github.com/repos/jehiah/json2csv/contents/dist.sh?ref=d40f54a3ed9c864fef7fede3cb7863d29b6d6fdd
+main.go,modified,8,15,23,"@@ -18,25 +18,18 @@ type LineReader interface {
+ 	ReadBytes(delim byte) (line []byte, err error)
+ }
+ 
+-var (
+-	inputFile   = flag.String(""i"", """", ""/path/to/input.json (optional; default is stdin)"")
+-	outputFile  = flag.String(""o"", """", ""/path/to/output.csv (optional; default is stdout)"")
+-	outputDelim = flag.String(""d"", "","", ""delimiter used for output values"")
+-	verbose     = flag.Bool(""v"", false, ""verbose output (to stderr)"")
+-	showVersion = flag.Bool(""version"", false, ""print version string"")
+-	printHeader = flag.Bool(""p"", false, ""prints header to output"")
+-	keys        = StringArray{}
+-)
+-
+-func init() {
+-	flag.Var(&keys, ""k"", ""fields to output"")
+-}
+-
+ func main() {
++	inputFile := flag.String(""i"", """", ""/path/to/input.json (optional; default is stdin)"")
++	outputFile := flag.String(""o"", """", ""/path/to/output.csv (optional; default is stdout)"")
++	outputDelim := flag.String(""d"", "","", ""delimiter used for output values"")
++	showVersion := flag.Bool(""version"", false, ""print version string"")
++	printHeader := flag.Bool(""p"", false, ""prints header to output"")
++	keys := StringArray{}
++	flag.Var(&keys, ""k"", ""fields to output"")
+ 	flag.Parse()
+ 
+ 	if *showVersion {
+-		fmt.Printf(""json2csv v1.1\n"")
++		fmt.Printf(""json2csv %s\n"", VERSION)
+ 		return
+ 	}
+ ",https://api.github.com/repos/jehiah/json2csv/contents/main.go?ref=d40f54a3ed9c864fef7fede3cb7863d29b6d6fdd
+main_test.go,modified,2,1,3,"@@ -3,11 +3,12 @@ package main
+ import (
+ 	""bytes""
+ 	""encoding/csv""
+-	""github.com/bmizerany/assert""
+ 	""io/ioutil""
+ 	""log""
+ 	""os""
+ 	""testing""
++
++	""github.com/bmizerany/assert""
+ )
+ 
+ func TestGetTopic(t *testing.T) {",https://api.github.com/repos/jehiah/json2csv/contents/main_test.go?ref=d40f54a3ed9c864fef7fede3cb7863d29b6d6fdd
+version.go,added,3,0,3,"@@ -0,0 +1,3 @@
++package main
++
++const VERSION = ""1.2.0""",https://api.github.com/repos/jehiah/json2csv/contents/version.go?ref=d40f54a3ed9c864fef7fede3cb7863d29b6d6fdd
+.gitignore,modified,2,0,2,"@@ -1,4 +1,6 @@
+ json2csv
++dist
++build
+ 
+ # from https://github.com/github/gitignore/blob/master/Go.gitignore
+ ",https://api.github.com/repos/jehiah/json2csv/contents/.gitignore?ref=b654775a384db9c2c491a9236413c9836115eab7
+.travis.yml,modified,2,2,4,"@@ -1,7 +1,7 @@
+ language: go
+ go:
+-  - 1.5.3
+-  - 1.6
++  - 1.7
++  - 1.8
+ sudo: false
+ install:
+   - go get github.com/bmizerany/assert",https://api.github.com/repos/jehiah/json2csv/contents/.travis.yml?ref=b654775a384db9c2c491a9236413c9836115eab7
+README.md,modified,2,1,3,"@@ -9,6 +9,8 @@ Converts a stream of newline separated json data to csv format.
+ Installation
+ ============
+ 
++pre-built binaries are available under [releases](https://github.com/jehiah/json2csv/releases).
++
+ If you have a working golang install, you can use `go get`.
+ 
+ ```bash
+@@ -23,7 +25,6 @@ usage: json2csv
+     -k fields,and,nested.fields,to,output
+     -i /path/to/input.json (optional; default is stdin)
+     -o /path/to/output.csv (optional; default is stdout)
+-    -v verbose output (to stderr)
+     --version
+     -p print csv header row
+     -h This help",https://api.github.com/repos/jehiah/json2csv/contents/README.md?ref=b654775a384db9c2c491a9236413c9836115eab7
+dist.sh,added,31,0,31,"@@ -0,0 +1,31 @@
++#!/bin/bash
++
++# build binary distributions for linux/amd64 and darwin/amd64
++set -e 
++
++DIR=""$(cd ""$(dirname ""${BASH_SOURCE[0]}"")"" && pwd)""
++echo ""working dir $DIR""
++
++echo ""... running tests""
++go test|| exit 1
++
++arch=$(go env GOARCH)
++version=$(cat $DIR/version.go | grep ""const VERSION"" | awk '{print $NF}' | sed 's/""//g')
++goversion=$(go version | awk '{print $3}')
++
++for os in linux darwin; do
++    echo ""... building v$version for $os/$arch""
++    BUILD=$(mktemp -d -t json2csv)
++    TARGET=""json2csv-$version.$os-$arch.$goversion""
++    GOOS=$os GOARCH=$arch CGO_ENABLED=0 go build
++    mkdir -p $BUILD/$TARGET
++    cp json2csv $BUILD/$TARGET/json2csv
++    pushd $BUILD >/dev/null
++    tar czvf $TARGET.tar.gz $TARGET
++    if [ -e $DIR/dist/$TARGET.tar.gz ]; then
++        echo ""... WARNING overwriting dist/$TARGET.tar.gz""
++    fi
++    mv $TARGET.tar.gz $DIR/dist
++    echo ""... built dist/$TARGET.tar.gz""
++    popd >/dev/null
++done
+\ No newline at end of file",https://api.github.com/repos/jehiah/json2csv/contents/dist.sh?ref=b654775a384db9c2c491a9236413c9836115eab7
+main.go,modified,8,15,23,"@@ -18,25 +18,18 @@ type LineReader interface {
+ 	ReadBytes(delim byte) (line []byte, err error)
+ }
+ 
+-var (
+-	inputFile   = flag.String(""i"", """", ""/path/to/input.json (optional; default is stdin)"")
+-	outputFile  = flag.String(""o"", """", ""/path/to/output.csv (optional; default is stdout)"")
+-	outputDelim = flag.String(""d"", "","", ""delimiter used for output values"")
+-	verbose     = flag.Bool(""v"", false, ""verbose output (to stderr)"")
+-	showVersion = flag.Bool(""version"", false, ""print version string"")
+-	printHeader = flag.Bool(""p"", false, ""prints header to output"")
+-	keys        = StringArray{}
+-)
+-
+-func init() {
+-	flag.Var(&keys, ""k"", ""fields to output"")
+-}
+-
+ func main() {
++	inputFile := flag.String(""i"", """", ""/path/to/input.json (optional; default is stdin)"")
++	outputFile := flag.String(""o"", """", ""/path/to/output.csv (optional; default is stdout)"")
++	outputDelim := flag.String(""d"", "","", ""delimiter used for output values"")
++	showVersion := flag.Bool(""version"", false, ""print version string"")
++	printHeader := flag.Bool(""p"", false, ""prints header to output"")
++	keys := StringArray{}
++	flag.Var(&keys, ""k"", ""fields to output"")
+ 	flag.Parse()
+ 
+ 	if *showVersion {
+-		fmt.Printf(""json2csv v1.1\n"")
++		fmt.Printf(""json2csv %s\n"", VERSION)
+ 		return
+ 	}
+ ",https://api.github.com/repos/jehiah/json2csv/contents/main.go?ref=b654775a384db9c2c491a9236413c9836115eab7
+main_test.go,modified,2,1,3,"@@ -3,11 +3,12 @@ package main
+ import (
+ 	""bytes""
+ 	""encoding/csv""
+-	""github.com/bmizerany/assert""
+ 	""io/ioutil""
+ 	""log""
+ 	""os""
+ 	""testing""
++
++	""github.com/bmizerany/assert""
+ )
+ 
+ func TestGetTopic(t *testing.T) {",https://api.github.com/repos/jehiah/json2csv/contents/main_test.go?ref=b654775a384db9c2c491a9236413c9836115eab7
+version.go,added,3,0,3,"@@ -0,0 +1,3 @@
++package main
++
++const VERSION = ""1.2.0""",https://api.github.com/repos/jehiah/json2csv/contents/version.go?ref=b654775a384db9c2c491a9236413c9836115eab7
+main.go,modified,1,1,2,"@@ -20,7 +20,7 @@ type LineReader interface {
+ 
+ var (
+ 	inputFile   = flag.String(""i"", """", ""/path/to/input.json (optional; default is stdin)"")
+-	outputFile  = flag.String(""o"", """", ""/path/to/output.json (optional; default is stdout)"")
++	outputFile  = flag.String(""o"", """", ""/path/to/output.csv (optional; default is stdout)"")
+ 	outputDelim = flag.String(""d"", "","", ""delimiter used for output values"")
+ 	verbose     = flag.Bool(""v"", false, ""verbose output (to stderr)"")
+ 	showVersion = flag.Bool(""version"", false, ""print version string"")",https://api.github.com/repos/jehiah/json2csv/contents/main.go?ref=7c45cd262843296c17fd6153dc90e74bf7b69a13
+.travis.yml,modified,4,0,4,"@@ -1,4 +1,8 @@
+ language: go
++go:
++  - 1.5.3
++  - 1.6
++sudo: false
+ install:
+   - go get github.com/bmizerany/assert
+ notifications:",https://api.github.com/repos/jehiah/json2csv/contents/.travis.yml?ref=7c45cd262843296c17fd6153dc90e74bf7b69a13
+main_test.go,modified,1,1,2,"@@ -22,7 +22,7 @@ func TestGetTopic(t *testing.T) {
+ 	json2csv(reader, writer, []string{""a"", ""c""}, false)
+ 
+ 	output := buf.String()
+-	assert.Equal(t, output, ""1,\""\""\n\""\"",\""\""\n"")
++	assert.Equal(t, output, ""1,\n,\n"")
+ }
+ 
+ func TestGetLargeInt(t *testing.T) {",https://api.github.com/repos/jehiah/json2csv/contents/main_test.go?ref=7c45cd262843296c17fd6153dc90e74bf7b69a13
+.travis.yml,modified,4,0,4,"@@ -1,4 +1,8 @@
+ language: go
++go:
++  - 1.5.3
++  - 1.6
++sudo: false
+ install:
+   - go get github.com/bmizerany/assert
+ notifications:",https://api.github.com/repos/jehiah/json2csv/contents/.travis.yml?ref=28c27963c4b86ce26a2d44d9e3fb41b2c957e3bf
+main_test.go,modified,1,1,2,"@@ -22,7 +22,7 @@ func TestGetTopic(t *testing.T) {
+ 	json2csv(reader, writer, []string{""a"", ""c""}, false)
+ 
+ 	output := buf.String()
+-	assert.Equal(t, output, ""1,\""\""\n\""\"",\""\""\n"")
++	assert.Equal(t, output, ""1,\n,\n"")
+ }
+ 
+ func TestGetLargeInt(t *testing.T) {",https://api.github.com/repos/jehiah/json2csv/contents/main_test.go?ref=28c27963c4b86ce26a2d44d9e3fb41b2c957e3bf
+.travis.yml,modified,4,0,4,"@@ -1,4 +1,8 @@
+ language: go
++go:
++  - 1.5.3
++  - 1.6
++sudo: false
+ install:
+   - go get github.com/bmizerany/assert
+ notifications:",https://api.github.com/repos/jehiah/json2csv/contents/.travis.yml?ref=3b0b2eb8ae965080b69a48d46175b5cbc88c9333
+main_test.go,modified,1,1,2,"@@ -22,7 +22,7 @@ func TestGetTopic(t *testing.T) {
+ 	json2csv(reader, writer, []string{""a"", ""c""}, false)
+ 
+ 	output := buf.String()
+-	assert.Equal(t, output, ""1,\""\""\n\""\"",\""\""\n"")
++	assert.Equal(t, output, ""1,\n,\n"")
+ }
+ 
+ func TestGetLargeInt(t *testing.T) {",https://api.github.com/repos/jehiah/json2csv/contents/main_test.go?ref=3b0b2eb8ae965080b69a48d46175b5cbc88c9333
+main.go,modified,1,1,2,"@@ -20,7 +20,7 @@ type LineReader interface {
+ 
+ var (
+ 	inputFile   = flag.String(""i"", """", ""/path/to/input.json (optional; default is stdin)"")
+-	outputFile  = flag.String(""o"", """", ""/path/to/output.json (optional; default is stdout)"")
++	outputFile  = flag.String(""o"", """", ""/path/to/output.csv (optional; default is stdout)"")
+ 	outputDelim = flag.String(""d"", "","", ""delimiter used for output values"")
+ 	verbose     = flag.Bool(""v"", false, ""verbose output (to stderr)"")
+ 	showVersion = flag.Bool(""version"", false, ""print version string"")",https://api.github.com/repos/jehiah/json2csv/contents/main.go?ref=60ddc083f740cd4e63c5e68fb205d323c0c356b9
+LICENSE,added,17,0,17,"@@ -0,0 +1,17 @@
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the ""Software""), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in
++all copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED ""AS IS"", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
++THE SOFTWARE.",https://api.github.com/repos/jehiah/json2csv/contents/LICENSE?ref=d82e60e6dc2a7d3bcf15314d1ecbebeffaacf0c6
+main.go,modified,3,1,4,"@@ -96,6 +96,7 @@ func get_value(data map[string]interface{}, keyparts []string) string {
+ func json2csv(r LineReader, w *csv.Writer, keys []string, printHeader bool) {
+ 	var line []byte
+ 	var err error
++	line_count := 0
+ 
+ 	var expanded_keys [][]string
+ 	for _, key := range keys {
+@@ -113,6 +114,7 @@ func json2csv(r LineReader, w *csv.Writer, keys []string, printHeader bool) {
+ 				break
+ 			}
+ 		}
++		line_count++
+ 		if len(line) == 0 {
+ 			continue
+ 		}
+@@ -126,7 +128,7 @@ func json2csv(r LineReader, w *csv.Writer, keys []string, printHeader bool) {
+ 		var data map[string]interface{}
+ 		err = json.Unmarshal(line, &data)
+ 		if err != nil {
+-			log.Printf(""ERROR Json Decoding: %s - %v"", err, line)
++			log.Printf(""ERROR Decoding JSON at line %d: %s\n%s"", line_count, err, line)
+ 			continue
+ 		}
+ ",https://api.github.com/repos/jehiah/json2csv/contents/main.go?ref=385b3206df88cb0bd8a113890d81ea335b3f5fdf
+main.go,modified,3,1,4,"@@ -96,6 +96,7 @@ func get_value(data map[string]interface{}, keyparts []string) string {
+ func json2csv(r LineReader, w *csv.Writer, keys []string, printHeader bool) {
+ 	var line []byte
+ 	var err error
++	line_count := 0
+ 
+ 	var expanded_keys [][]string
+ 	for _, key := range keys {
+@@ -113,6 +114,7 @@ func json2csv(r LineReader, w *csv.Writer, keys []string, printHeader bool) {
+ 				break
+ 			}
+ 		}
++		line_count++
+ 		if len(line) == 0 {
+ 			continue
+ 		}
+@@ -126,7 +128,7 @@ func json2csv(r LineReader, w *csv.Writer, keys []string, printHeader bool) {
+ 		var data map[string]interface{}
+ 		err = json.Unmarshal(line, &data)
+ 		if err != nil {
+-			log.Printf(""ERROR Json Decoding: %s - %v"", err, line)
++			log.Printf(""ERROR Decoding JSON at line %d: %s\n%s"", line_count, err, line)
+ 			continue
+ 		}
+ ",https://api.github.com/repos/jehiah/json2csv/contents/main.go?ref=083fe6ab8245ae48de8f3c89b3ad7658d5ca3281
+main.go,modified,6,1,7,"@@ -11,6 +11,7 @@ import (
+ 	""math""
+ 	""os""
+ 	""strings""
++	""unicode/utf8""
+ )
+ 
+ type LineReader interface {
+@@ -20,9 +21,10 @@ type LineReader interface {
+ var (
+ 	inputFile   = flag.String(""i"", """", ""/path/to/input.json (optional; default is stdin)"")
+ 	outputFile  = flag.String(""o"", """", ""/path/to/output.json (optional; default is stdout)"")
++	outputDelim = flag.String(""d"", "","", ""delimiter used for output values"")
+ 	verbose     = flag.Bool(""v"", false, ""verbose output (to stderr)"")
+ 	showVersion = flag.Bool(""version"", false, ""print version string"")
+-	printHeader = flag.Bool(""p"", false, ""Prints header to output"")
++	printHeader = flag.Bool(""p"", false, ""prints header to output"")
+ 	keys        = StringArray{}
+ )
+ 
+@@ -62,6 +64,9 @@ func main() {
+ 		writer = csv.NewWriter(os.Stdout)
+ 	}
+ 
++	delim, _ := utf8.DecodeRuneInString(*outputDelim)
++	writer.Comma = delim
++
+ 	json2csv(reader, writer, keys, *printHeader)
+ }
+ ",https://api.github.com/repos/jehiah/json2csv/contents/main.go?ref=f6071deca000340d33e7ecf467cdfac6669cb5d6
+main.go,modified,6,1,7,"@@ -11,6 +11,7 @@ import (
+ 	""math""
+ 	""os""
+ 	""strings""
++	""unicode/utf8""
+ )
+ 
+ type LineReader interface {
+@@ -20,9 +21,10 @@ type LineReader interface {
+ var (
+ 	inputFile   = flag.String(""i"", """", ""/path/to/input.json (optional; default is stdin)"")
+ 	outputFile  = flag.String(""o"", """", ""/path/to/output.json (optional; default is stdout)"")
++	outputDelim = flag.String(""d"", "","", ""delimiter used for output values"")
+ 	verbose     = flag.Bool(""v"", false, ""verbose output (to stderr)"")
+ 	showVersion = flag.Bool(""version"", false, ""print version string"")
+-	printHeader = flag.Bool(""p"", false, ""Prints header to output"")
++	printHeader = flag.Bool(""p"", false, ""prints header to output"")
+ 	keys        = StringArray{}
+ )
+ 
+@@ -62,6 +64,9 @@ func main() {
+ 		writer = csv.NewWriter(os.Stdout)
+ 	}
+ 
++	delim, _ := utf8.DecodeRuneInString(*outputDelim)
++	writer.Comma = delim
++
+ 	json2csv(reader, writer, keys, *printHeader)
+ }
+ ",https://api.github.com/repos/jehiah/json2csv/contents/main.go?ref=55ce1f273b09adf2cf13c2f81ea78b38107b68e6
+main.go,modified,4,3,7,"@@ -43,8 +43,8 @@ func main() {
+ 	if *inputFile != """" {
+ 		file, err := os.OpenFile(*inputFile, os.O_RDONLY, 0600)
+ 		if err != nil {
+-			log.Printf(""Error %s opening %v"", err, *inputFile)
+-			return
++			log.Printf(""Error %s opening input file %v"", err, *inputFile)
++			os.Exit(1)
+ 		}
+ 		reader = bufio.NewReader(file)
+ 	} else {
+@@ -54,7 +54,8 @@ func main() {
+ 	if *outputFile != """" {
+ 		file, err := os.OpenFile(*outputFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
+ 		if err != nil {
+-			log.Printf(""Error %s opening outputFile %v"", err, *outputFile)
++			log.Printf(""Error %s opening output file %v"", err, *outputFile)
++			os.Exit(1)
+ 		}
+ 		writer = csv.NewWriter(file)
+ 	} else {",https://api.github.com/repos/jehiah/json2csv/contents/main.go?ref=a2a6ed101f449442382ae89c2a0195847914ee1b
+README.md,modified,2,1,3,"@@ -25,7 +25,8 @@ usage: json2csv
+     -o /path/to/output.csv (optional; default is stdout)
+     -v verbose output (to stderr)
+     --version
+-    -h this help
++    -p print csv header row
++    -h This help
+ ```
+ 
+ To convert:",https://api.github.com/repos/jehiah/json2csv/contents/README.md?ref=ebc499ba730faf94eca604d6c8bdf4a0b598cc63
+main.go,modified,10,4,14,"@@ -22,6 +22,7 @@ var (
+ 	outputFile  = flag.String(""o"", """", ""/path/to/output.json (optional; default is stdout)"")
+ 	verbose     = flag.Bool(""v"", false, ""verbose output (to stderr)"")
+ 	showVersion = flag.Bool(""version"", false, ""print version string"")
++	printHeader = flag.Bool(""p"", false, ""Prints header to output"")
+ 	keys        = StringArray{}
+ )
+ 
+@@ -60,8 +61,7 @@ func main() {
+ 		writer = csv.NewWriter(os.Stdout)
+ 	}
+ 
+-
+-	json2csv(reader, writer, keys)
++	json2csv(reader, writer, keys, *printHeader)
+ }
+ 
+ func get_value(data map[string]interface{}, keyparts []string) string {
+@@ -82,12 +82,12 @@ func get_value(data map[string]interface{}, keyparts []string) string {
+ 		default:
+ 			return fmt.Sprintf(""%+v"", v)
+ 		}
+-	} 
++	}
+ 
+ 	return """"
+ }
+ 
+-func json2csv(r LineReader, w *csv.Writer, keys []string) {
++func json2csv(r LineReader, w *csv.Writer, keys []string, printHeader bool) {
+ 	var line []byte
+ 	var err error
+ 
+@@ -111,6 +111,12 @@ func json2csv(r LineReader, w *csv.Writer, keys []string) {
+ 			continue
+ 		}
+ 
++		if printHeader {
++			w.Write(keys)
++			w.Flush()
++			printHeader = false
++		}
++
+ 		var data map[string]interface{}
+ 		err = json.Unmarshal(line, &data)
+ 		if err != nil {",https://api.github.com/repos/jehiah/json2csv/contents/main.go?ref=ebc499ba730faf94eca604d6c8bdf4a0b598cc63
+main_test.go,modified,19,4,23,"@@ -19,7 +19,7 @@ func TestGetTopic(t *testing.T) {
+ 	buf := bytes.NewBuffer([]byte{})
+ 	writer := csv.NewWriter(buf)
+ 
+-	json2csv(reader, writer, []string{""a"", ""c""})
++	json2csv(reader, writer, []string{""a"", ""c""}, false)
+ 
+ 	output := buf.String()
+ 	assert.Equal(t, output, ""1,\""\""\n\""\"",\""\""\n"")
+@@ -33,7 +33,7 @@ func TestGetLargeInt(t *testing.T) {
+ 	buf := bytes.NewBuffer([]byte{})
+ 	writer := csv.NewWriter(buf)
+ 
+-	json2csv(reader, writer, []string{""a""})
++	json2csv(reader, writer, []string{""a""}, false)
+ 
+ 	output := buf.String()
+ 	assert.Equal(t, output, ""1356998399\n"")
+@@ -47,7 +47,7 @@ func TestGetFloat(t *testing.T) {
+ 	buf := bytes.NewBuffer([]byte{})
+ 	writer := csv.NewWriter(buf)
+ 
+-	json2csv(reader, writer, []string{""a""})
++	json2csv(reader, writer, []string{""a""}, false)
+ 
+ 	output := buf.String()
+ 	assert.Equal(t, output, ""1356998399.320000\n"")
+@@ -61,8 +61,23 @@ func TestGetNested(t *testing.T) {
+ 	buf := bytes.NewBuffer([]byte{})
+ 	writer := csv.NewWriter(buf)
+ 
+-	json2csv(reader, writer, []string{""a.b""})
++	json2csv(reader, writer, []string{""a.b""}, false)
+ 
+ 	output := buf.String()
+ 	assert.Equal(t, output, ""asdf\n"")
+ }
++
++func TestHeader(t *testing.T) {
++	log.SetOutput(ioutil.Discard)
++	defer log.SetOutput(os.Stdout)
++
++	reader := bytes.NewBufferString(`{""a"": ""b""}
++{""a"": ""c""}`)
++	buf := bytes.NewBuffer([]byte{})
++	writer := csv.NewWriter(buf)
++
++	json2csv(reader, writer, []string{""a""}, true)
++
++	output := buf.String()
++	assert.Equal(t, output, ""a\nb\nc\n"")
++}",https://api.github.com/repos/jehiah/json2csv/contents/main_test.go?ref=ebc499ba730faf94eca604d6c8bdf4a0b598cc63
+README.md,modified,8,7,15,"@@ -1,7 +1,7 @@
+ json2csv
+ ========
+ 
+-Converts a stream of newline separated json data to csv format
++Converts a stream of newline separated json data to csv format.
+ 
+ [![Build Status](https://travis-ci.org/jehiah/json2csv.png?branch=master)](https://travis-ci.org/jehiah/json2csv)
+ 
+@@ -20,7 +20,7 @@ Usage
+ 
+ ```
+ usage: json2csv
+-    -k fields,to,output
++    -k fields,and,nested.fields,to,output
+     -i /path/to/input.json (optional; default is stdin)
+     -o /path/to/output.csv (optional; default is stdout)
+     -v verbose output (to stderr)
+@@ -31,26 +31,27 @@ usage: json2csv
+ To convert:
+ 
+ ```json
+-{""login"":""jehiah"", ""remote_ip"": ""127.0.0.1"", ""dt"" : ""[20/Aug/2010:01:12:44 -0400]""}
+-{""login"":""unknown"", ""remote_ip"": ""76.216.210.0"", ""dt"" : ""[20/Aug/2010:01:12:45 -0400]""}
++{""user"": {""name"":""jehiah"", ""password"": ""root""}, ""remote_ip"": ""127.0.0.1"", ""dt"" : ""[20/Aug/2010:01:12:44 -0400]""}
++{""user"": {""name"":""jeroenjanssens"", ""password"": ""123""}, ""remote_ip"": ""192.168.0.1"", ""dt"" : ""[20/Aug/2010:01:12:44 -0400]""}
++{""user"": {""name"":""unknown"", ""password"": """"}, ""remote_ip"": ""76.216.210.0"", ""dt"" : ""[20/Aug/2010:01:12:45 -0400]""}
+ ```
+ 
+ to:
+ 
+ ```
+ ""jehiah"",""127.0.0.1""
++""jeroenjanssens"",""192.168.0.1""
+ ""unknown"",""76.216.210.0""
+ ```
+     
+ you would either
+ 
+ ```bash
+-json2csv -k login,remote_ip -i input.json -o output.csv
++json2csv -k user.name,remote_ip -i input.json -o output.csv
+ ```
+ 
+ or
+ 
+ ```bash
+-cat input.json | json2csv -k login,remote_ip > output.csv
++cat input.json | json2csv -k user.name,remote_ip > output.csv
+ ```
+-",https://api.github.com/repos/jehiah/json2csv/contents/README.md?ref=48d9f9102cfad0cbbe2bd225e9e6332616e25872
+main.go,modified,35,18,53,"@@ -10,6 +10,7 @@ import (
+ 	""log""
+ 	""math""
+ 	""os""
++	""strings""
+ )
+ 
+ type LineReader interface {
+@@ -59,12 +60,42 @@ func main() {
+ 		writer = csv.NewWriter(os.Stdout)
+ 	}
+ 
++
+ 	json2csv(reader, writer, keys)
+ }
+ 
++func get_value(data map[string]interface{}, keyparts []string) string {
++	if len(keyparts) > 1 {
++		subdata, _ := data[keyparts[0]].(map[string]interface{})
++		return get_value(subdata, keyparts[1:])
++	} else if v, ok := data[keyparts[0]]; ok {
++		switch v.(type) {
++		case nil:
++			return """"
++		case float64:
++			f, _ := v.(float64)
++			if math.Mod(f, 1.0) == 0.0 {
++				return fmt.Sprintf(""%d"", int(f))
++			} else {
++				return fmt.Sprintf(""%f"", f)
++			}
++		default:
++			return fmt.Sprintf(""%+v"", v)
++		}
++	} 
++
++	return """"
++}
++
+ func json2csv(r LineReader, w *csv.Writer, keys []string) {
+ 	var line []byte
+ 	var err error
++
++	var expanded_keys [][]string
++	for _, key := range keys {
++		expanded_keys = append(expanded_keys, strings.Split(key, "".""))
++	}
++
+ 	for {
+ 		if err == io.EOF {
+ 			return
+@@ -86,26 +117,12 @@ func json2csv(r LineReader, w *csv.Writer, keys []string) {
+ 			log.Printf(""ERROR Json Decoding: %s - %v"", err, line)
+ 			continue
+ 		}
++
+ 		var record []string
+-		for _, key := range keys {
+-			if v, ok := data[key]; ok {
+-				switch v.(type) {
+-				case nil:
+-					record = append(record, """")
+-				case float64:
+-					f, _ := v.(float64)
+-					if math.Mod(f, 1.0) == 0.0 {
+-						record = append(record, fmt.Sprintf(""%d"", int(f)))
+-					} else {
+-						record = append(record, fmt.Sprintf(""%f"", f))
+-					}
+-				default:
+-					record = append(record, fmt.Sprintf(""%+v"", v))
+-				}
+-			} else {
+-				record = append(record, """")
+-			}
++		for _, expanded_key := range expanded_keys {
++			record = append(record, get_value(data, expanded_key))
+ 		}
++
+ 		w.Write(record)
+ 		w.Flush()
+ 	}",https://api.github.com/repos/jehiah/json2csv/contents/main.go?ref=48d9f9102cfad0cbbe2bd225e9e6332616e25872
+main_test.go,modified,14,0,14,"@@ -52,3 +52,17 @@ func TestGetFloat(t *testing.T) {
+ 	output := buf.String()
+ 	assert.Equal(t, output, ""1356998399.320000\n"")
+ }
++
++func TestGetNested(t *testing.T) {
++	log.SetOutput(ioutil.Discard)
++	defer log.SetOutput(os.Stdout)
++
++	reader := bytes.NewBufferString(`{""a"": {""b"": ""asdf""}}`)
++	buf := bytes.NewBuffer([]byte{})
++	writer := csv.NewWriter(buf)
++
++	json2csv(reader, writer, []string{""a.b""})
++
++	output := buf.String()
++	assert.Equal(t, output, ""asdf\n"")
++}",https://api.github.com/repos/jehiah/json2csv/contents/main_test.go?ref=48d9f9102cfad0cbbe2bd225e9e6332616e25872
+README.md,modified,5,3,8,"@@ -1,15 +1,18 @@
+ json2csv
+ ========
+ 
+-Converts a stream of newline separated json data to csv format. This version of json2csv supports nested fields.
++Converts a stream of newline separated json data to csv format.
++
++[![Build Status](https://travis-ci.org/jehiah/json2csv.png?branch=master)](https://travis-ci.org/jehiah/json2csv)
++
+ 
+ Installation
+ ============
+ 
+ If you have a working golang install, you can use `go get`.
+ 
+ ```bash
+-go get github.com/jeroenjanssens/json2csv
++go get github.com/jehiah/json2csv
+ ```
+ 
+ Usage
+@@ -52,4 +55,3 @@ or
+ ```bash
+ cat input.json | json2csv -k user.name,remote_ip > output.csv
+ ```
+-",https://api.github.com/repos/jehiah/json2csv/contents/README.md?ref=f99581b6f4590a0e0998f3ae530d1cc1d0e01287
+README.md,modified,9,10,19,"@@ -1,26 +1,23 @@
+ json2csv
+ ========
+ 
+-Converts a stream of newline separated json data to csv format
+-
+-[![Build Status](https://travis-ci.org/jehiah/json2csv.png?branch=master)](https://travis-ci.org/jehiah/json2csv)
+-
++Converts a stream of newline separated json data to csv format. This version of json2csv supports nested fields.
+ 
+ Installation
+ ============
+ 
+ If you have a working golang install, you can use `go get`.
+ 
+ ```bash
+-go get github.com/jehiah/json2csv
++go get github.com/jeroenjanssens/json2csv
+ ```
+ 
+ Usage
+ =====
+ 
+ ```
+ usage: json2csv
+-    -k fields,to,output
++    -k fields,and,nested.fields,to,output
+     -i /path/to/input.json (optional; default is stdin)
+     -o /path/to/output.csv (optional; default is stdout)
+     -v verbose output (to stderr)
+@@ -31,26 +28,28 @@ usage: json2csv
+ To convert:
+ 
+ ```json
+-{""login"":""jehiah"", ""remote_ip"": ""127.0.0.1"", ""dt"" : ""[20/Aug/2010:01:12:44 -0400]""}
+-{""login"":""unknown"", ""remote_ip"": ""76.216.210.0"", ""dt"" : ""[20/Aug/2010:01:12:45 -0400]""}
++{""user"": {""name"":""jehiah"", ""password"": ""root""}, ""remote_ip"": ""127.0.0.1"", ""dt"" : ""[20/Aug/2010:01:12:44 -0400]""}
++{""user"": {""name"":""jeroenjanssens"", ""password"": ""123""}, ""remote_ip"": ""192.168.0.1"", ""dt"" : ""[20/Aug/2010:01:12:44 -0400]""}
++{""user"": {""name"":""unknown"", ""password"": """"}, ""remote_ip"": ""76.216.210.0"", ""dt"" : ""[20/Aug/2010:01:12:45 -0400]""}
+ ```
+ 
+ to:
+ 
+ ```
+ ""jehiah"",""127.0.0.1""
++""jeroenjanssens"",""192.168.0.1""
+ ""unknown"",""76.216.210.0""
+ ```
+     
+ you would either
+ 
+ ```bash
+-json2csv -k login,remote_ip -i input.json -o output.csv
++json2csv -k user.name,remote_ip -i input.json -o output.csv
+ ```
+ 
+ or
+ 
+ ```bash
+-cat input.json | json2csv -k login,remote_ip > output.csv
++cat input.json | json2csv -k user.name,remote_ip > output.csv
+ ```
+ ",https://api.github.com/repos/jehiah/json2csv/contents/README.md?ref=a7ad23333e9b4c57535b9d1005fa3410bb3ff4c3
+main.go,modified,35,18,53,"@@ -10,6 +10,7 @@ import (
+ 	""log""
+ 	""math""
+ 	""os""
++	""strings""
+ )
+ 
+ type LineReader interface {
+@@ -59,12 +60,42 @@ func main() {
+ 		writer = csv.NewWriter(os.Stdout)
+ 	}
+ 
++
+ 	json2csv(reader, writer, keys)
+ }
+ 
++func get_value(data map[string]interface{}, keyparts []string) string {
++	if len(keyparts) > 1 {
++		subdata, _ := data[keyparts[0]].(map[string]interface{})
++		return get_value(subdata, keyparts[1:])
++	} else if v, ok := data[keyparts[0]]; ok {
++		switch v.(type) {
++		case nil:
++			return """"
++		case float64:
++			f, _ := v.(float64)
++			if math.Mod(f, 1.0) == 0.0 {
++				return fmt.Sprintf(""%d"", int(f))
++			} else {
++				return fmt.Sprintf(""%f"", f)
++			}
++		default:
++			return fmt.Sprintf(""%+v"", v)
++		}
++	} 
++
++	return """"
++}
++
+ func json2csv(r LineReader, w *csv.Writer, keys []string) {
+ 	var line []byte
+ 	var err error
++
++	var expanded_keys [][]string
++	for _, key := range keys {
++		expanded_keys = append(expanded_keys, strings.Split(key, "".""))
++	}
++
+ 	for {
+ 		if err == io.EOF {
+ 			return
+@@ -86,26 +117,12 @@ func json2csv(r LineReader, w *csv.Writer, keys []string) {
+ 			log.Printf(""ERROR Json Decoding: %s - %v"", err, line)
+ 			continue
+ 		}
++
+ 		var record []string
+-		for _, key := range keys {
+-			if v, ok := data[key]; ok {
+-				switch v.(type) {
+-				case nil:
+-					record = append(record, """")
+-				case float64:
+-					f, _ := v.(float64)
+-					if math.Mod(f, 1.0) == 0.0 {
+-						record = append(record, fmt.Sprintf(""%d"", int(f)))
+-					} else {
+-						record = append(record, fmt.Sprintf(""%f"", f))
+-					}
+-				default:
+-					record = append(record, fmt.Sprintf(""%+v"", v))
+-				}
+-			} else {
+-				record = append(record, """")
+-			}
++		for _, expanded_key := range expanded_keys {
++			record = append(record, get_value(data, expanded_key))
+ 		}
++
+ 		w.Write(record)
+ 		w.Flush()
+ 	}",https://api.github.com/repos/jehiah/json2csv/contents/main.go?ref=a7ad23333e9b4c57535b9d1005fa3410bb3ff4c3
+main_test.go,modified,14,0,14,"@@ -52,3 +52,17 @@ func TestGetFloat(t *testing.T) {
+ 	output := buf.String()
+ 	assert.Equal(t, output, ""1356998399.320000\n"")
+ }
++
++func TestGetNested(t *testing.T) {
++	log.SetOutput(ioutil.Discard)
++	defer log.SetOutput(os.Stdout)
++
++	reader := bytes.NewBufferString(`{""a"": {""b"": ""asdf""}}`)
++	buf := bytes.NewBuffer([]byte{})
++	writer := csv.NewWriter(buf)
++
++	json2csv(reader, writer, []string{""a.b""})
++
++	output := buf.String()
++	assert.Equal(t, output, ""asdf\n"")
++}",https://api.github.com/repos/jehiah/json2csv/contents/main_test.go?ref=a7ad23333e9b4c57535b9d1005fa3410bb3ff4c3
+main.go,modified,8,0,8,"@@ -8,6 +8,7 @@ import (
+ 	""fmt""
+ 	""io""
+ 	""log""
++	""math""
+ 	""os""
+ )
+ 
+@@ -91,6 +92,13 @@ func json2csv(r LineReader, w *csv.Writer, keys []string) {
+ 				switch v.(type) {
+ 				case nil:
+ 					record = append(record, """")
++				case float64:
++					f, _ := v.(float64)
++					if math.Mod(f, 1.0) == 0.0 {
++						record = append(record, fmt.Sprintf(""%d"", int(f)))
++					} else {
++						record = append(record, fmt.Sprintf(""%f"", f))
++					}
+ 				default:
+ 					record = append(record, fmt.Sprintf(""%+v"", v))
+ 				}",https://api.github.com/repos/jehiah/json2csv/contents/main.go?ref=aa8c301a5c20be01dd30f0066917adb325371b00
+main_test.go,modified,28,0,28,"@@ -24,3 +24,31 @@ func TestGetTopic(t *testing.T) {
+ 	output := buf.String()
+ 	assert.Equal(t, output, ""1,\""\""\n\""\"",\""\""\n"")
+ }
++
++func TestGetLargeInt(t *testing.T) {
++	log.SetOutput(ioutil.Discard)
++	defer log.SetOutput(os.Stdout)
++
++	reader := bytes.NewBufferString(`{""a"": 1356998399}`)
++	buf := bytes.NewBuffer([]byte{})
++	writer := csv.NewWriter(buf)
++
++	json2csv(reader, writer, []string{""a""})
++
++	output := buf.String()
++	assert.Equal(t, output, ""1356998399\n"")
++}
++
++func TestGetFloat(t *testing.T) {
++	log.SetOutput(ioutil.Discard)
++	defer log.SetOutput(os.Stdout)
++
++	reader := bytes.NewBufferString(`{""a"": 1356998399.32}`)
++	buf := bytes.NewBuffer([]byte{})
++	writer := csv.NewWriter(buf)
++
++	json2csv(reader, writer, []string{""a""})
++
++	output := buf.String()
++	assert.Equal(t, output, ""1356998399.320000\n"")
++}",https://api.github.com/repos/jehiah/json2csv/contents/main_test.go?ref=aa8c301a5c20be01dd30f0066917adb325371b00
+main.go,modified,8,0,8,"@@ -8,6 +8,7 @@ import (
+ 	""fmt""
+ 	""io""
+ 	""log""
++	""math""
+ 	""os""
+ )
+ 
+@@ -91,6 +92,13 @@ func json2csv(r LineReader, w *csv.Writer, keys []string) {
+ 				switch v.(type) {
+ 				case nil:
+ 					record = append(record, """")
++				case float64:
++					f, _ := v.(float64)
++					if math.Mod(f, 1.0) == 0.0 {
++						record = append(record, fmt.Sprintf(""%d"", int(f)))
++					} else {
++						record = append(record, fmt.Sprintf(""%f"", f))
++					}
+ 				default:
+ 					record = append(record, fmt.Sprintf(""%+v"", v))
+ 				}",https://api.github.com/repos/jehiah/json2csv/contents/main.go?ref=86bb4b3bfb2d4d022936487451aa0f8cfa4e4ea6
+main_test.go,modified,28,0,28,"@@ -24,3 +24,31 @@ func TestGetTopic(t *testing.T) {
+ 	output := buf.String()
+ 	assert.Equal(t, output, ""1,\""\""\n\""\"",\""\""\n"")
+ }
++
++func TestGetLargeInt(t *testing.T) {
++	log.SetOutput(ioutil.Discard)
++	defer log.SetOutput(os.Stdout)
++
++	reader := bytes.NewBufferString(`{""a"": 1356998399}`)
++	buf := bytes.NewBuffer([]byte{})
++	writer := csv.NewWriter(buf)
++
++	json2csv(reader, writer, []string{""a""})
++
++	output := buf.String()
++	assert.Equal(t, output, ""1356998399\n"")
++}
++
++func TestGetFloat(t *testing.T) {
++	log.SetOutput(ioutil.Discard)
++	defer log.SetOutput(os.Stdout)
++
++	reader := bytes.NewBufferString(`{""a"": 1356998399.32}`)
++	buf := bytes.NewBuffer([]byte{})
++	writer := csv.NewWriter(buf)
++
++	json2csv(reader, writer, []string{""a""})
++
++	output := buf.String()
++	assert.Equal(t, output, ""1356998399.320000\n"")
++}",https://api.github.com/repos/jehiah/json2csv/contents/main_test.go?ref=86bb4b3bfb2d4d022936487451aa0f8cfa4e4ea6
+main.go,modified,1,1,2,"@@ -17,7 +17,7 @@ type LineReader interface {
+ 
+ var (
+ 	inputFile   = flag.String(""i"", """", ""/path/to/input.json (optional; default is stdin)"")
+-	outputFile  = flag.String(""o"", """", ""/path/to/output.json (optional; default is stdin)"")
++	outputFile  = flag.String(""o"", """", ""/path/to/output.json (optional; default is stdout)"")
+ 	verbose     = flag.Bool(""v"", false, ""verbose output (to stderr)"")
+ 	showVersion = flag.Bool(""version"", false, ""print version string"")
+ 	keys        = StringArray{}",https://api.github.com/repos/jehiah/json2csv/contents/main.go?ref=f6acc1f38a9e8f376a4e4008be6418136f4116ac
+README.md,modified,1,1,2,"@@ -12,7 +12,7 @@ Installation
+ If you have a working golang install, you can use `go get`.
+ 
+ ```bash
+-go install github.com/jehiah/json2csv
++go get github.com/jehiah/json2csv
+ ```
+ 
+ Usage",https://api.github.com/repos/jehiah/json2csv/contents/README.md?ref=4c45ba4b75d18e414f11c2f8548d2d79f7cab6bf
+.gitignore,modified,25,1,26,"@@ -1,2 +1,26 @@
+ json2csv
+-json2csv.dSYM
+\ No newline at end of file
++
++# from https://github.com/github/gitignore/blob/master/Go.gitignore
++
++# Compiled Object files, Static and Dynamic libs (Shared Objects)
++*.o
++*.a
++*.so
++
++# Folders
++_obj
++_test
++
++# Architecture specific extensions/prefixes
++*.[568vq]
++[568vq].out
++
++*.cgo1.go
++*.cgo2.c
++_cgo_defun.c
++_cgo_gotypes.go
++_cgo_export.*
++
++_testmain.go
++
++*.exe
+\ No newline at end of file",https://api.github.com/repos/jehiah/json2csv/contents/.gitignore?ref=5d4c81d78c063dcaf758efaed3071998394514ba
+.travis.yml,added,6,0,6,"@@ -0,0 +1,6 @@
++language: go
++install:
++  - go get github.com/bmizerany/assert
++notifications:
++  email: false
++",https://api.github.com/repos/jehiah/json2csv/contents/.travis.yml?ref=5d4c81d78c063dcaf758efaed3071998394514ba
+Makefile,removed,0,13,13,"@@ -1,13 +0,0 @@
+-CFLAGS = -I. -I/usr/local/include -O2 -g
+-LIBS = -L. -L/usr/local/lib -ljson
+-
+-all: json2csv
+-
+-json2csv: json2csv.c 
+-	$(CC) $(CFLAGS) -o json2csv json2csv.c $(LIBS)
+-
+-install:
+-	/usr/bin/install json2csv /usr/local/bin/
+-
+-clean:
+-	rm -f json2csv",https://api.github.com/repos/jehiah/json2csv/contents/Makefile?ref=da3803db55b75c4f5b6340015006074ba254a415
+README.markdown,removed,0,48,48,"@@ -1,48 +0,0 @@
+-json2csv
+-========
+-
+-Converts a stream of newline separated json data to csv format
+-
+-    usage: json2csv
+-        -k fields,to,output
+-        -i /path/to/input.json (optional; default is stdin)
+-        -o /path/to/output.csv (optional; default is stdout)
+-        -v verbose output (to stderr)
+-        -h this help
+-
+-To convert:
+-
+-    {""login"":""jehiah"", ""remote_ip"": ""127.0.0.1"", ""dt"" : ""[20/Aug/2010:01:12:44 -0400]""}
+-    {""login"":""unknown"", ""remote_ip"": ""76.216.210.0"", ""dt"" : ""[20/Aug/2010:01:12:45 -0400]""}
+-    
+-to:
+-
+-    ""jehiah"",""127.0.0.1""
+-    ""unknown"",""76.216.210.0""
+-    
+-you would either
+-
+-    json2csv -k login,remote_ip -i input.json -o output.csv
+-
+-or
+-
+-    cat input.json | json2csv -k login,remote_ip > output.csv
+-
+-Installation
+-============
+-
+-json-c dependancy
+-
+-    $ git clone git://github.com/jehiah/json-c.git
+-    $ cd json-c
+-    $ sh autogen.sh
+-    $ ./configure
+-    $ make
+-    $ make install
+-
+-json2csv
+-
+-    $ git clone git://github.com/jehiah/json2csv.git
+-    $ cd json2csv
+-    $ make
+-    $ make install",https://api.github.com/repos/jehiah/json2csv/contents/README.markdown?ref=da3803db55b75c4f5b6340015006074ba254a415
+README.md,added,56,0,56,"@@ -0,0 +1,56 @@
++json2csv
++========
++
++Converts a stream of newline separated json data to csv format
++
++[![Build Status](https://travis-ci.org/jehiah/json2csv.png?branch=master)](https://travis-ci.org/jehiah/json2csv)
++
++
++Installation
++============
++
++If you have a working golang install, you can use `go get`.
++
++```bash
++go install github.com/jehiah/json2csv
++```
++
++Usage
++=====
++
++```
++usage: json2csv
++    -k fields,to,output
++    -i /path/to/input.json (optional; default is stdin)
++    -o /path/to/output.csv (optional; default is stdout)
++    -v verbose output (to stderr)
++    --version
++    -h this help
++```
++
++To convert:
++
++```json
++{""login"":""jehiah"", ""remote_ip"": ""127.0.0.1"", ""dt"" : ""[20/Aug/2010:01:12:44 -0400]""}
++{""login"":""unknown"", ""remote_ip"": ""76.216.210.0"", ""dt"" : ""[20/Aug/2010:01:12:45 -0400]""}
++```
++
++to:
++
++```
++""jehiah"",""127.0.0.1""
++""unknown"",""76.216.210.0""
++```
++    
++you would either
++
++```bash
++json2csv -k login,remote_ip -i input.json -o output.csv
++```
++
++or
++
++```bash
++cat input.json | json2csv -k login,remote_ip > output.csv
++```
++",https://api.github.com/repos/jehiah/json2csv/contents/README.md?ref=5d4c81d78c063dcaf758efaed3071998394514ba
+json2csv.c,removed,0,219,219,"@@ -1,219 +0,0 @@
+-/*
+-json2csv converts json data to csv format
+-
+-http://github.com/jehiah/json2csv
+-
+-copyright 2010 Jehiah Czebotar <jehiah@gmail.com> 
+-
+-Version: 1.0
+-
+-uses json-c fork at http://github.com/jehiah/json-c
+-*/
+-
+-#include <sys/types.h>
+-#include <stdio.h>
+-#include <stdlib.h>
+-#include <string.h>
+-#include <unistd.h>
+-
+-#include ""json/json.h""
+-
+-#define SUCCESS 0
+-#define FAILURE 1
+-
+-#define JSON_GET_STR(json_obj, field) (json_object_get_string(json_object_object_get(json_obj, field)))
+-#define JSON_GET_INT(json_obj, field) (json_object_get_int(json_object_object_get(json_obj, field)))
+-#define JSON_FREE(json_obj) (json_object_put(json_obj))
+-#define JSON_DEBUG 0
+-
+-#define BUFF_SIZE 20480
+-
+-int parse_fields(char *str, char **field_array);
+-void parse_output_keys(char *str);
+-void process_line(char *source, FILE *output);
+-void run(char *input_filename, char *output_filename);
+-void usage();
+-
+-int parse_json(char *json_str, struct json_object **json_obj); 
+-
+-
+-int verbose=0;
+-/* variables to hold the keys we want to output */
+-static char *output_keys[64];
+-static int  num_output_keys = 0;
+-char buffer[BUFF_SIZE];
+-
+-
+-int parse_json(char *json_str, struct json_object **json_obj)
+-{
+-    if (!json_str) {
+-        if(JSON_DEBUG) fprintf(stderr, ""ERR: empty message\n"");
+-        return FAILURE;
+-    }
+-
+-    if (strlen(json_str) < 3) {
+-        if(JSON_DEBUG) fprintf(stderr, ""ERR: empty json\n"");
+-        return FAILURE;
+-    }
+-
+-    *json_obj = json_tokener_parse(json_str);
+-
+-    if (*json_obj == NULL) {
+-        fprintf(stderr, ""ERR: unable to parse json (%s) \n"", json_str);
+-        return FAILURE;
+-    }
+-
+-    return SUCCESS;
+-}
+-
+-void process_line(char *source, FILE *output)
+-{
+-    int i=0;
+-    struct json_object *json_obj;
+-    if (parse_json(source, &json_obj) == FAILURE) {
+-        return;
+-    }
+-    for (i=0; i < num_output_keys; i++) {
+-        if (i == 0) {
+-            fprintf(output, ""\""%s\"""", JSON_GET_STR(json_obj, output_keys[i]));
+-        } else {
+-            fprintf(output, "",\""%s\"""", JSON_GET_STR(json_obj, output_keys[i]));
+-        }
+-    }
+-    fprintf(output,""\n"");
+-    if (json_obj) {
+-        JSON_FREE(json_obj);
+-    }
+-}
+-
+-void run(char *input_filename, char *output_filename) {
+-    FILE *in_file = stdin;
+-    FILE *out_file = stdout;
+-    struct json_object *data;
+-    const char *json;
+-    ssize_t read;
+-    size_t line_len=0;
+-
+-    if (input_filename) {
+-        if (verbose) fprintf(stderr, ""input file is %s\n"", input_filename);
+-        in_file = fopen(input_filename, ""r"" );
+-    } else {
+-        if (verbose) fprintf(stderr, ""input is stdin\n"");
+-    }
+-    if (output_filename) {
+-        if (verbose) fprintf(stderr, ""output file is %s\n"", output_filename);
+-        out_file = fopen(output_filename, ""w"" );
+-    } else {
+-        if (verbose) fprintf(stderr, ""output is stdout\n"");
+-    }
+-    
+-    int lines = 0;
+-    if (!in_file){
+-        perror(input_filename);
+-        return;
+-    }
+-    if (!out_file){
+-        perror(output_filename);
+-        return;
+-    }
+-    data = json_object_new_object();
+-    while (fgets(buffer, BUFF_SIZE, in_file)) {
+-        lines +=1;
+-        process_line(buffer, out_file);
+-    }
+-    if (verbose) fprintf(stderr, ""processed %d lines\n"", lines);
+-    fclose(in_file);
+-    fclose(out_file);
+-    JSON_FREE(data);
+-    
+-}
+-
+-
+-void parse_output_keys(char *str)
+-{
+-    int i;
+-    num_output_keys = parse_fields(str, output_keys);
+-
+-    if (verbose) {
+-        for (i=0; i < num_output_keys; i++) {
+-            fprintf(stderr, ""selecting key: \""%s\""\n"", output_keys[i]);
+-        }
+-    }
+-    return;
+-}
+-
+-/*
+- * Parse a comma-delimited list of strings and put them
+- * in an char array. Array better have enough slots
+- * because I didn't have time to work out the memory allocation.
+- */
+-int parse_fields(char *str, char **field_array)
+-{
+-    int i;
+-    const char delim[] = "","";
+-    char *tok, *str_ptr, *save_ptr;
+-
+-    if (!str) return;
+-
+-    str_ptr = strdup(str);
+-
+-    tok = strtok_r(str_ptr, delim, &save_ptr);
+-
+-    i = 0;
+-    while (tok != NULL) {
+-        field_array[i] = strdup(tok);
+-        tok = strtok_r(NULL, delim, &save_ptr);
+-        i++;
+-    }
+-    return i;
+-}
+-
+-void usage(){
+-    fprintf(stderr, ""usage: json2csv\n"");
+-    fprintf(stderr, ""\t-k fields,to,output\n"");
+-    fprintf(stderr, ""\t-i /path/to/input.json (optional; default is stdin)\n"");
+-    fprintf(stderr, ""\t-o /path/to/output.csv (optional; default is stdout)\n"");
+-    fprintf(stderr, ""\t-v verbose output (to stderr)\n"");
+-    fprintf(stderr, ""\t-h this help\n"");
+-}
+-
+-int main(int argc, char **argv)
+-{
+-    int ch;
+-    char *input_filename = NULL;
+-    char *output_filename = NULL;
+-    
+-    while ((ch = getopt(argc, argv, ""i:o:k:vh"")) != -1) {
+-        switch (ch) {
+-        case 'i':
+-            input_filename = optarg;
+-            break;
+-        case 'o':
+-            output_filename = optarg;
+-            break;
+-        case 'k':
+-            parse_output_keys(optarg);
+-            break;
+-        case 'v':
+-            verbose = 1;
+-            break;
+-        case 'h':
+-            usage();
+-            exit(0);
+-            break;
+-        default:
+-            usage();
+-            exit(1);
+-            break;
+-        }
+-    }
+-    
+-    if (!num_output_keys){
+-        fprintf(stderr, ""no input keys specified\n"");
+-        usage();
+-        exit(1);
+-    }
+-    
+-    run(input_filename, output_filename);
+-    return 0;
+-}",https://api.github.com/repos/jehiah/json2csv/contents/json2csv.c?ref=da3803db55b75c4f5b6340015006074ba254a415
+main.go,added,104,0,104,"@@ -0,0 +1,104 @@
++package main
++
++import (
++	""bufio""
++	""encoding/csv""
++	""encoding/json""
++	""flag""
++	""fmt""
++	""io""
++	""log""
++	""os""
++)
++
++type LineReader interface {
++	ReadBytes(delim byte) (line []byte, err error)
++}
++
++var (
++	inputFile   = flag.String(""i"", """", ""/path/to/input.json (optional; default is stdin)"")
++	outputFile  = flag.String(""o"", """", ""/path/to/output.json (optional; default is stdin)"")
++	verbose     = flag.Bool(""v"", false, ""verbose output (to stderr)"")
++	showVersion = flag.Bool(""version"", false, ""print version string"")
++	keys        = StringArray{}
++)
++
++func init() {
++	flag.Var(&keys, ""k"", ""fields to output"")
++}
++
++func main() {
++	flag.Parse()
++
++	if *showVersion {
++		fmt.Printf(""json2csv v1.1\n"")
++		return
++	}
++
++	var reader *bufio.Reader
++	var writer *csv.Writer
++	if *inputFile != """" {
++		file, err := os.OpenFile(*inputFile, os.O_RDONLY, 0600)
++		if err != nil {
++			log.Printf(""Error %s opening %v"", err, *inputFile)
++			return
++		}
++		reader = bufio.NewReader(file)
++	} else {
++		reader = bufio.NewReader(os.Stdin)
++	}
++
++	if *outputFile != """" {
++		file, err := os.OpenFile(*outputFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
++		if err != nil {
++			log.Printf(""Error %s opening outputFile %v"", err, *outputFile)
++		}
++		writer = csv.NewWriter(file)
++	} else {
++		writer = csv.NewWriter(os.Stdout)
++	}
++
++	json2csv(reader, writer, keys)
++}
++
++func json2csv(r LineReader, w *csv.Writer, keys []string) {
++	var line []byte
++	var err error
++	for {
++		if err == io.EOF {
++			return
++		}
++		line, err = r.ReadBytes('\n')
++		if err != nil {
++			if err != io.EOF {
++				log.Printf(""Input ERROR: %s"", err)
++				break
++			}
++		}
++		if len(line) == 0 {
++			continue
++		}
++
++		var data map[string]interface{}
++		err = json.Unmarshal(line, &data)
++		if err != nil {
++			log.Printf(""ERROR Json Decoding: %s - %v"", err, line)
++			continue
++		}
++		var record []string
++		for _, key := range keys {
++			if v, ok := data[key]; ok {
++				switch v.(type) {
++				case nil:
++					record = append(record, """")
++				default:
++					record = append(record, fmt.Sprintf(""%+v"", v))
++				}
++			} else {
++				record = append(record, """")
++			}
++		}
++		w.Write(record)
++		w.Flush()
++	}
++}",https://api.github.com/repos/jehiah/json2csv/contents/main.go?ref=5d4c81d78c063dcaf758efaed3071998394514ba
+main_test.go,added,26,0,26,"@@ -0,0 +1,26 @@
++package main
++
++import (
++	""bytes""
++	""encoding/csv""
++	""github.com/bmizerany/assert""
++	""io/ioutil""
++	""log""
++	""os""
++	""testing""
++)
++
++func TestGetTopic(t *testing.T) {
++	log.SetOutput(ioutil.Discard)
++	defer log.SetOutput(os.Stdout)
++
++	reader := bytes.NewBufferString(`{""a"": 1, ""b"": ""asdf\n""}
++{""a"" : null}`)
++	buf := bytes.NewBuffer([]byte{})
++	writer := csv.NewWriter(buf)
++
++	json2csv(reader, writer, []string{""a"", ""c""})
++
++	output := buf.String()
++	assert.Equal(t, output, ""1,\""\""\n\""\"",\""\""\n"")
++}",https://api.github.com/repos/jehiah/json2csv/contents/main_test.go?ref=5d4c81d78c063dcaf758efaed3071998394514ba
+string_array.go,added,19,0,19,"@@ -0,0 +1,19 @@
++package main
++
++import (
++	""fmt""
++	""strings""
++)
++
++type StringArray []string
++
++func (a *StringArray) Set(s string) error {
++	for _, ss := range strings.Split(s, "","") {
++		*a = append(*a, ss)
++	}
++	return nil
++}
++
++func (a *StringArray) String() string {
++	return fmt.Sprint(*a)
++}",https://api.github.com/repos/jehiah/json2csv/contents/string_array.go?ref=5d4c81d78c063dcaf758efaed3071998394514ba
+test/test1.expected,removed,0,2,2,"@@ -1,2 +0,0 @@
+-""1""
+-""(null)""",https://api.github.com/repos/jehiah/json2csv/contents/test/test1.expected?ref=da3803db55b75c4f5b6340015006074ba254a415
+test/test1.json,removed,0,2,2,"@@ -1,2 +0,0 @@
+-{""a"": 1, ""b"": ""asdf\n""}
+-{""a"" : null}",https://api.github.com/repos/jehiah/json2csv/contents/test/test1.json?ref=da3803db55b75c4f5b6340015006074ba254a415
+test/test1.sh,removed,0,9,9,"@@ -1,9 +0,0 @@
+-#!/bin/sh
+-../json2csv -k a -i test1.json -o test1.output
+-diff test1.output test1.expected
+-if [ $? != 0 ]; then
+-    echo ""output not as expected""
+-    exit 1;
+-fi
+-echo ""test1 passes"";
+-rm test1.output;
+\ No newline at end of file",https://api.github.com/repos/jehiah/json2csv/contents/test/test1.sh?ref=da3803db55b75c4f5b6340015006074ba254a415
+main.go,modified,9,4,13,"@@ -62,16 +62,22 @@ func main() {
+ }
+ 
+ func json2csv(r LineReader, w *csv.Writer, keys []string) {
+-	line, err := r.ReadBytes('\n')
++	var line []byte
++	var err error
+ 	for {
++		if err == io.EOF {
++			return
++		}
++		line, err = r.ReadBytes('\n')
+ 		if err != nil {
+ 			if err != io.EOF {
+ 				log.Printf(""Input ERROR: %s"", err)
+ 				break
+-			} else {
+-				return
+ 			}
+ 		}
++		if len(line) == 0 {
++			continue
++		}
+ 
+ 		var data map[string]interface{}
+ 		err = json.Unmarshal(line, &data)
+@@ -94,6 +100,5 @@ func json2csv(r LineReader, w *csv.Writer, keys []string) {
+ 		}
+ 		w.Write(record)
+ 		w.Flush()
+-		line, err = r.ReadBytes('\n')
+ 	}
+ }",https://api.github.com/repos/jehiah/json2csv/contents/main.go?ref=328faf323fd3d185fc0edc9ea8b91822a6e573ca
+main.go,modified,4,2,6,"@@ -37,7 +37,7 @@ func main() {
+ 
+ 	var reader *bufio.Reader
+ 	var writer *csv.Writer
+-	if *inputFile == """" {
++	if *inputFile != """" {
+ 		file, err := os.OpenFile(*inputFile, os.O_RDONLY, 0600)
+ 		if err != nil {
+ 			log.Printf(""Error %s opening %v"", err, *inputFile)
+@@ -51,7 +51,7 @@ func main() {
+ 	if *outputFile != """" {
+ 		file, err := os.OpenFile(*outputFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
+ 		if err != nil {
+-			log.Printf(""Error %s opening %v"", err, *outputFile)
++			log.Printf(""Error %s opening outputFile %v"", err, *outputFile)
+ 		}
+ 		writer = csv.NewWriter(file)
+ 	} else {
+@@ -68,6 +68,8 @@ func json2csv(r LineReader, w *csv.Writer, keys []string) {
+ 			if err != io.EOF {
+ 				log.Printf(""Input ERROR: %s"", err)
+ 				break
++			} else {
++				return
+ 			}
+ 		}
+ ",https://api.github.com/repos/jehiah/json2csv/contents/main.go?ref=83df064ac675f2950cb1a2d95001ac1a4ae57a24
+main.go,modified,28,7,35,"@@ -16,11 +16,11 @@ type LineReader interface {
+ }
+ 
+ var (
+-	inputFilename  = flag.String(""i"", """", ""/path/to/input.json (optional; default is stdin)"")
+-	outputFilename = flag.String(""o"", """", ""/path/to/output.json (optional; default is stdin)"")
+-	verbose        = flag.Bool(""v"", false, ""verbose output (to stderr)"")
+-	showVersion    = flag.Bool(""version"", false, ""print version string"")
+-	keys           = StringArray{}
++	inputFile   = flag.String(""i"", """", ""/path/to/input.json (optional; default is stdin)"")
++	outputFile  = flag.String(""o"", """", ""/path/to/output.json (optional; default is stdin)"")
++	verbose     = flag.Bool(""v"", false, ""verbose output (to stderr)"")
++	showVersion = flag.Bool(""version"", false, ""print version string"")
++	keys        = StringArray{}
+ )
+ 
+ func init() {
+@@ -35,8 +35,29 @@ func main() {
+ 		return
+ 	}
+ 
+-	reader := bufio.NewReader(os.Stdin)
+-	writer := csv.NewWriter(os.Stdout)
++	var reader *bufio.Reader
++	var writer *csv.Writer
++	if *inputFile == """" {
++		file, err := os.OpenFile(*inputFile, os.O_RDONLY, 0600)
++		if err != nil {
++			log.Printf(""Error %s opening %v"", err, *inputFile)
++			return
++		}
++		reader = bufio.NewReader(file)
++	} else {
++		reader = bufio.NewReader(os.Stdin)
++	}
++
++	if *outputFile != """" {
++		file, err := os.OpenFile(*outputFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
++		if err != nil {
++			log.Printf(""Error %s opening %v"", err, *outputFile)
++		}
++		writer = csv.NewWriter(file)
++	} else {
++		writer = csv.NewWriter(os.Stdout)
++	}
++
+ 	json2csv(reader, writer, keys)
+ }
+ ",https://api.github.com/repos/jehiah/json2csv/contents/main.go?ref=0d4b6afd3fbd14a48f389f593fb1bf0614002b62
+string_array.go,modified,4,1,5,"@@ -2,12 +2,15 @@ package main
+ 
+ import (
+ 	""fmt""
++	""strings""
+ )
+ 
+ type StringArray []string
+ 
+ func (a *StringArray) Set(s string) error {
+-	*a = append(*a, s)
++	for _, ss := range strings.Split(s, "","") {
++		*a = append(*a, ss)
++	}
+ 	return nil
+ }
+ ",https://api.github.com/repos/jehiah/json2csv/contents/string_array.go?ref=ef4356ae8deb55282997bc3ed62614c1749c0d16
+Makefile,removed,0,13,13,"@@ -1,13 +0,0 @@
+-CFLAGS = -I. -I/usr/local/include -O2 -g
+-LIBS = -L. -L/usr/local/lib -ljson
+-
+-all: json2csv
+-
+-json2csv: json2csv.c 
+-	$(CC) $(CFLAGS) -o json2csv json2csv.c $(LIBS)
+-
+-install:
+-	/usr/bin/install json2csv /usr/local/bin/
+-
+-clean:
+-	rm -f json2csv",https://api.github.com/repos/jehiah/json2csv/contents/Makefile?ref=1d6e9653053ed33ca38cb517b35e15837583d0e5
+README.md,modified,36,23,59,"@@ -1,43 +1,56 @@
+ json2csv
+ ========
+ 
++Converts a stream of newline separated json data to csv format
++
+ [![Build Status](https://travis-ci.org/jehiah/json2csv.png?branch=master)](https://travis-ci.org/jehiah/json2csv)
+ 
+-Converts a stream of newline separated json data to csv format
+ 
+-    usage: json2csv
+-        -k fields,to,output
+-        -i /path/to/input.json (optional; default is stdin)
+-        -o /path/to/output.csv (optional; default is stdout)
+-        -v verbose output (to stderr)
+-        --version
+-        -h this help
++Installation
++============
++
++If you have a working golang install, you can use `go get`.
++
++```bash
++go install github.com/jehiah/json2csv
++```
++
++Usage
++=====
++
++```
++usage: json2csv
++    -k fields,to,output
++    -i /path/to/input.json (optional; default is stdin)
++    -o /path/to/output.csv (optional; default is stdout)
++    -v verbose output (to stderr)
++    --version
++    -h this help
++```
+ 
+ To convert:
+ 
+-    {""login"":""jehiah"", ""remote_ip"": ""127.0.0.1"", ""dt"" : ""[20/Aug/2010:01:12:44 -0400]""}
+-    {""login"":""unknown"", ""remote_ip"": ""76.216.210.0"", ""dt"" : ""[20/Aug/2010:01:12:45 -0400]""}
+-    
++```json
++{""login"":""jehiah"", ""remote_ip"": ""127.0.0.1"", ""dt"" : ""[20/Aug/2010:01:12:44 -0400]""}
++{""login"":""unknown"", ""remote_ip"": ""76.216.210.0"", ""dt"" : ""[20/Aug/2010:01:12:45 -0400]""}
++```
++
+ to:
+ 
+-    ""jehiah"",""127.0.0.1""
+-    ""unknown"",""76.216.210.0""
++```
++""jehiah"",""127.0.0.1""
++""unknown"",""76.216.210.0""
++```
+     
+ you would either
+ 
+-    json2csv -k login,remote_ip -i input.json -o output.csv
++```bash
++json2csv -k login,remote_ip -i input.json -o output.csv
++```
+ 
+ or
+ 
+-    cat input.json | json2csv -k login,remote_ip > output.csv
+-
+-Installation
+-============
+-
+-If you have a working golang install, you can use `go get`.
+-
+ ```bash
+-go install github.com/jehiah/json2csv
++cat input.json | json2csv -k login,remote_ip > output.csv
+ ```
+ 
+-",https://api.github.com/repos/jehiah/json2csv/contents/README.md?ref=1d6e9653053ed33ca38cb517b35e15837583d0e5
+.travis.yml,added,6,0,6,"@@ -0,0 +1,6 @@
++language: go
++install:
++  - go get github.com/bmizerany/assert
++notifications:
++  email: false
++",https://api.github.com/repos/jehiah/json2csv/contents/.travis.yml?ref=50b4013177351ea2f41a276090c79c6f14fbd6a3
+README.md,modified,3,0,3,"@@ -1,13 +1,16 @@
+ json2csv
+ ========
+ 
++[![Build Status](https://travis-ci.org/jehiah/json2csv.png?branch=master)](https://travis-ci.org/jehiah/json2csv)
++
+ Converts a stream of newline separated json data to csv format
+ 
+     usage: json2csv
+         -k fields,to,output
+         -i /path/to/input.json (optional; default is stdin)
+         -o /path/to/output.csv (optional; default is stdout)
+         -v verbose output (to stderr)
++        --version
+         -h this help
+ 
+ To convert:",https://api.github.com/repos/jehiah/json2csv/contents/README.md?ref=50b4013177351ea2f41a276090c79c6f14fbd6a3
+README.md,renamed,4,12,16,"@@ -31,18 +31,10 @@ or
+ Installation
+ ============
+ 
+-json-c dependancy
++If you have a working golang install, you can use `go get`.
+ 
+-    $ git clone git://github.com/jehiah/json-c.git
+-    $ cd json-c
+-    $ sh autogen.sh
+-    $ ./configure
+-    $ make
+-    $ make install
++```bash
++go install github.com/jehiah/json2csv
++```
+ 
+-json2csv
+ 
+-    $ git clone git://github.com/jehiah/json2csv.git
+-    $ cd json2csv
+-    $ make
+-    $ make install",https://api.github.com/repos/jehiah/json2csv/contents/README.md?ref=2656661c0f19147884b6817567db6956c2047bde
+json2csv.c,removed,0,219,219,"@@ -1,219 +0,0 @@
+-/*
+-json2csv converts json data to csv format
+-
+-http://github.com/jehiah/json2csv
+-
+-copyright 2010 Jehiah Czebotar <jehiah@gmail.com> 
+-
+-Version: 1.0
+-
+-uses json-c fork at http://github.com/jehiah/json-c
+-*/
+-
+-#include <sys/types.h>
+-#include <stdio.h>
+-#include <stdlib.h>
+-#include <string.h>
+-#include <unistd.h>
+-
+-#include ""json/json.h""
+-
+-#define SUCCESS 0
+-#define FAILURE 1
+-
+-#define JSON_GET_STR(json_obj, field) (json_object_get_string(json_object_object_get(json_obj, field)))
+-#define JSON_GET_INT(json_obj, field) (json_object_get_int(json_object_object_get(json_obj, field)))
+-#define JSON_FREE(json_obj) (json_object_put(json_obj))
+-#define JSON_DEBUG 0
+-
+-#define BUFF_SIZE 20480
+-
+-int parse_fields(char *str, char **field_array);
+-void parse_output_keys(char *str);
+-void process_line(char *source, FILE *output);
+-void run(char *input_filename, char *output_filename);
+-void usage();
+-
+-int parse_json(char *json_str, struct json_object **json_obj); 
+-
+-
+-int verbose=0;
+-/* variables to hold the keys we want to output */
+-static char *output_keys[64];
+-static int  num_output_keys = 0;
+-char buffer[BUFF_SIZE];
+-
+-
+-int parse_json(char *json_str, struct json_object **json_obj)
+-{
+-    if (!json_str) {
+-        if(JSON_DEBUG) fprintf(stderr, ""ERR: empty message\n"");
+-        return FAILURE;
+-    }
+-
+-    if (strlen(json_str) < 3) {
+-        if(JSON_DEBUG) fprintf(stderr, ""ERR: empty json\n"");
+-        return FAILURE;
+-    }
+-
+-    *json_obj = json_tokener_parse(json_str);
+-
+-    if (*json_obj == NULL) {
+-        fprintf(stderr, ""ERR: unable to parse json (%s) \n"", json_str);
+-        return FAILURE;
+-    }
+-
+-    return SUCCESS;
+-}
+-
+-void process_line(char *source, FILE *output)
+-{
+-    int i=0;
+-    struct json_object *json_obj;
+-    if (parse_json(source, &json_obj) == FAILURE) {
+-        return;
+-    }
+-    for (i=0; i < num_output_keys; i++) {
+-        if (i == 0) {
+-            fprintf(output, ""\""%s\"""", JSON_GET_STR(json_obj, output_keys[i]));
+-        } else {
+-            fprintf(output, "",\""%s\"""", JSON_GET_STR(json_obj, output_keys[i]));
+-        }
+-    }
+-    fprintf(output,""\n"");
+-    if (json_obj) {
+-        JSON_FREE(json_obj);
+-    }
+-}
+-
+-void run(char *input_filename, char *output_filename) {
+-    FILE *in_file = stdin;
+-    FILE *out_file = stdout;
+-    struct json_object *data;
+-    const char *json;
+-    ssize_t read;
+-    size_t line_len=0;
+-
+-    if (input_filename) {
+-        if (verbose) fprintf(stderr, ""input file is %s\n"", input_filename);
+-        in_file = fopen(input_filename, ""r"" );
+-    } else {
+-        if (verbose) fprintf(stderr, ""input is stdin\n"");
+-    }
+-    if (output_filename) {
+-        if (verbose) fprintf(stderr, ""output file is %s\n"", output_filename);
+-        out_file = fopen(output_filename, ""w"" );
+-    } else {
+-        if (verbose) fprintf(stderr, ""output is stdout\n"");
+-    }
+-    
+-    int lines = 0;
+-    if (!in_file){
+-        perror(input_filename);
+-        return;
+-    }
+-    if (!out_file){
+-        perror(output_filename);
+-        return;
+-    }
+-    data = json_object_new_object();
+-    while (fgets(buffer, BUFF_SIZE, in_file)) {
+-        lines +=1;
+-        process_line(buffer, out_file);
+-    }
+-    if (verbose) fprintf(stderr, ""processed %d lines\n"", lines);
+-    fclose(in_file);
+-    fclose(out_file);
+-    JSON_FREE(data);
+-    
+-}
+-
+-
+-void parse_output_keys(char *str)
+-{
+-    int i;
+-    num_output_keys = parse_fields(str, output_keys);
+-
+-    if (verbose) {
+-        for (i=0; i < num_output_keys; i++) {
+-            fprintf(stderr, ""selecting key: \""%s\""\n"", output_keys[i]);
+-        }
+-    }
+-    return;
+-}
+-
+-/*
+- * Parse a comma-delimited list of strings and put them
+- * in an char array. Array better have enough slots
+- * because I didn't have time to work out the memory allocation.
+- */
+-int parse_fields(char *str, char **field_array)
+-{
+-    int i;
+-    const char delim[] = "","";
+-    char *tok, *str_ptr, *save_ptr;
+-
+-    if (!str) return;
+-
+-    str_ptr = strdup(str);
+-
+-    tok = strtok_r(str_ptr, delim, &save_ptr);
+-
+-    i = 0;
+-    while (tok != NULL) {
+-        field_array[i] = strdup(tok);
+-        tok = strtok_r(NULL, delim, &save_ptr);
+-        i++;
+-    }
+-    return i;
+-}
+-
+-void usage(){
+-    fprintf(stderr, ""usage: json2csv\n"");
+-    fprintf(stderr, ""\t-k fields,to,output\n"");
+-    fprintf(stderr, ""\t-i /path/to/input.json (optional; default is stdin)\n"");
+-    fprintf(stderr, ""\t-o /path/to/output.csv (optional; default is stdout)\n"");
+-    fprintf(stderr, ""\t-v verbose output (to stderr)\n"");
+-    fprintf(stderr, ""\t-h this help\n"");
+-}
+-
+-int main(int argc, char **argv)
+-{
+-    int ch;
+-    char *input_filename = NULL;
+-    char *output_filename = NULL;
+-    
+-    while ((ch = getopt(argc, argv, ""i:o:k:vh"")) != -1) {
+-        switch (ch) {
+-        case 'i':
+-            input_filename = optarg;
+-            break;
+-        case 'o':
+-            output_filename = optarg;
+-            break;
+-        case 'k':
+-            parse_output_keys(optarg);
+-            break;
+-        case 'v':
+-            verbose = 1;
+-            break;
+-        case 'h':
+-            usage();
+-            exit(0);
+-            break;
+-        default:
+-            usage();
+-            exit(1);
+-            break;
+-        }
+-    }
+-    
+-    if (!num_output_keys){
+-        fprintf(stderr, ""no input keys specified\n"");
+-        usage();
+-        exit(1);
+-    }
+-    
+-    run(input_filename, output_filename);
+-    return 0;
+-}",https://api.github.com/repos/jehiah/json2csv/contents/json2csv.c?ref=dead2e4328503ca39452d6dea052067a58d74e7f
+main.go,added,76,0,76,"@@ -0,0 +1,76 @@
++package main
++
++import (
++	""bufio""
++	""encoding/csv""
++	""encoding/json""
++	""flag""
++	""fmt""
++	""io""
++	""log""
++	""os""
++)
++
++type LineReader interface {
++	ReadBytes(delim byte) (line []byte, err error)
++}
++
++var (
++	inputFilename  = flag.String(""i"", """", ""/path/to/input.json (optional; default is stdin)"")
++	outputFilename = flag.String(""o"", """", ""/path/to/output.json (optional; default is stdin)"")
++	verbose        = flag.Bool(""v"", false, ""verbose output (to stderr)"")
++	showVersion    = flag.Bool(""version"", false, ""print version string"")
++	keys           = StringArray{}
++)
++
++func init() {
++	flag.Var(&keys, ""k"", ""fields to output"")
++}
++
++func main() {
++	flag.Parse()
++
++	if *showVersion {
++		fmt.Printf(""json2csv v1.1\n"")
++		return
++	}
++
++	reader := bufio.NewReader(os.Stdin)
++	writer := csv.NewWriter(os.Stdout)
++	json2csv(reader, writer, keys)
++}
++
++func json2csv(r LineReader, w *csv.Writer, keys []string) {
++	line, err := r.ReadBytes('\n')
++	for {
++		if err != nil {
++			if err != io.EOF {
++				log.Printf(""Input ERROR: %s"", err)
++				break
++			}
++		}
++
++		var data map[string]interface{}
++		err = json.Unmarshal(line, &data)
++		if err != nil {
++			log.Printf(""ERROR Json Decoding: %s - %v"", err, line)
++			continue
++		}
++		var record []string
++		for _, key := range keys {
++			if v, ok := data[key]; ok {
++				switch v.(type) {
++				case nil:
++					record = append(record, """")
++				default:
++					record = append(record, fmt.Sprintf(""%+v"", v))
++				}
++			} else {
++				record = append(record, """")
++			}
++		}
++		w.Write(record)
++		w.Flush()
++		line, err = r.ReadBytes('\n')
++	}
++}",https://api.github.com/repos/jehiah/json2csv/contents/main.go?ref=2656661c0f19147884b6817567db6956c2047bde
+main_test.go,added,26,0,26,"@@ -0,0 +1,26 @@
++package main
++
++import (
++	""bytes""
++	""encoding/csv""
++	""github.com/bmizerany/assert""
++	""io/ioutil""
++	""log""
++	""os""
++	""testing""
++)
++
++func TestGetTopic(t *testing.T) {
++	log.SetOutput(ioutil.Discard)
++	defer log.SetOutput(os.Stdout)
++
++	reader := bytes.NewBufferString(`{""a"": 1, ""b"": ""asdf\n""}
++{""a"" : null}`)
++	buf := bytes.NewBuffer([]byte{})
++	writer := csv.NewWriter(buf)
++
++	json2csv(reader, writer, []string{""a"", ""c""})
++
++	output := buf.String()
++	assert.Equal(t, output, ""1,\""\""\n\""\"",\""\""\n"")
++}",https://api.github.com/repos/jehiah/json2csv/contents/main_test.go?ref=2656661c0f19147884b6817567db6956c2047bde
+string_array.go,added,16,0,16,"@@ -0,0 +1,16 @@
++package main
++
++import (
++	""fmt""
++)
++
++type StringArray []string
++
++func (a *StringArray) Set(s string) error {
++	*a = append(*a, s)
++	return nil
++}
++
++func (a *StringArray) String() string {
++	return fmt.Sprint(*a)
++}",https://api.github.com/repos/jehiah/json2csv/contents/string_array.go?ref=2656661c0f19147884b6817567db6956c2047bde
+test/test1.expected,removed,0,2,2,"@@ -1,2 +0,0 @@
+-""1""
+-""(null)""",https://api.github.com/repos/jehiah/json2csv/contents/test/test1.expected?ref=dead2e4328503ca39452d6dea052067a58d74e7f
+test/test1.json,removed,0,2,2,"@@ -1,2 +0,0 @@
+-{""a"": 1, ""b"": ""asdf\n""}
+-{""a"" : null}",https://api.github.com/repos/jehiah/json2csv/contents/test/test1.json?ref=dead2e4328503ca39452d6dea052067a58d74e7f
+test/test1.sh,removed,0,9,9,"@@ -1,9 +0,0 @@
+-#!/bin/sh
+-../json2csv -k a -i test1.json -o test1.output
+-diff test1.output test1.expected
+-if [ $? != 0 ]; then
+-    echo ""output not as expected""
+-    exit 1;
+-fi
+-echo ""test1 passes"";
+-rm test1.output;
+\ No newline at end of file",https://api.github.com/repos/jehiah/json2csv/contents/test/test1.sh?ref=dead2e4328503ca39452d6dea052067a58d74e7f
+.gitignore,modified,25,1,26,"@@ -1,2 +1,26 @@
+ json2csv
+-json2csv.dSYM
+\ No newline at end of file
++
++# from https://github.com/github/gitignore/blob/master/Go.gitignore
++
++# Compiled Object files, Static and Dynamic libs (Shared Objects)
++*.o
++*.a
++*.so
++
++# Folders
++_obj
++_test
++
++# Architecture specific extensions/prefixes
++*.[568vq]
++[568vq].out
++
++*.cgo1.go
++*.cgo2.c
++_cgo_defun.c
++_cgo_gotypes.go
++_cgo_export.*
++
++_testmain.go
++
++*.exe
+\ No newline at end of file",https://api.github.com/repos/jehiah/json2csv/contents/.gitignore?ref=dead2e4328503ca39452d6dea052067a58d74e7f
+json2csv.c,modified,3,3,6,"@@ -26,11 +26,11 @@ uses json-c fork at http://github.com/jehiah/json-c
+ #define JSON_FREE(json_obj) (json_object_put(json_obj))
+ #define JSON_DEBUG 0
+ 
+-#define BUFF_SIZE 10240
++#define BUFF_SIZE 20480
+ 
+ int parse_fields(char *str, char **field_array);
+ void parse_output_keys(char *str);
+-int process_line(char *source, FILE *output);
++void process_line(char *source, FILE *output);
+ void run(char *input_filename, char *output_filename);
+ void usage();
+ 
+@@ -66,7 +66,7 @@ int parse_json(char *json_str, struct json_object **json_obj)
+     return SUCCESS;
+ }
+ 
+-int process_line(char *source, FILE *output)
++void process_line(char *source, FILE *output)
+ {
+     int i=0;
+     struct json_object *json_obj;",https://api.github.com/repos/jehiah/json2csv/contents/json2csv.c?ref=da3803db55b75c4f5b6340015006074ba254a415
+README.markdown,modified,1,1,2,"@@ -18,7 +18,7 @@ To convert:
+ to:
+ 
+     ""jehiah"",""127.0.0.1""
+-    ""unknown"",""72.14.204.99""
++    ""unknown"",""76.216.210.0""
+     
+ you would either
+ ",https://api.github.com/repos/jehiah/json2csv/contents/README.markdown?ref=3c1ff8c32c0091d32d0eb69ad4f668b989e55d67
