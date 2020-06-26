@@ -9,8 +9,8 @@ class RetrvCommitContent():
     def __init__(self, repo_id):    
         self.repo_id  = repo_id 
         
-        self.username = "acielecki"
-        self.token = "369e1093422f763f2745348139a4762218f62848"
+        self.username = "***********"
+        self.token = "****************************"
         
         self.commit_content = []
         
@@ -24,7 +24,7 @@ class RetrvCommitContent():
     def write_csv(self):
         file = str(self.repo_id) + '_content' +'.csv'
 
-        with open(file, 'w', encoding='utf-8') as csv_file:
+        with open(file, 'w', encoding='utf-8', newline="") as csv_file:
         
             writer = csv.writer(csv_file)
 
