@@ -10,8 +10,8 @@ class RetrvCommits():
         self.repo_id  = repo_id
         self.repo_url = repo_url
         
-        self.username = "acielecki"
-        self.token = "369e1093422f763f2745348139a4762218f62848"
+        self.username = "********"
+        self.token = "******************************"
         
         self.list_of_commits = []
         
@@ -23,9 +23,9 @@ class RetrvCommits():
         return result.json()
         
     def write_csv(self):
-        file = str(self.repo_id) + '.csv'
+        file = str(self.repo_id) + '_commits.csv'
 
-        with open(file, 'w', encoding="utf-8") as csv_file:
+        with open(file, 'w', encoding="utf-8", newline='') as csv_file:
         
             writer = csv.writer(csv_file)
 
@@ -36,7 +36,9 @@ class RetrvCommits():
                 row = list(commit.values())
                 writer.writerow(row)
         csv_file.close()
-        
+
+    #collect commit information displayed on given page
+    #and add it to out list of commits for the given project
     def filter_commits(self, commits):
         commit_list = []
         
@@ -48,11 +50,21 @@ class RetrvCommits():
             commit_dict["date"]    = item["commit"]["author"]["date"]
             commit_dict["message"] = item["commit"]["message"]
             commit_dict["commits"] = item["commit"]["tree"]["url"]
+            #if no parents exist, set value to none
+            if (len(item["parents"]) < 1):
+               commit_dict["parents"] = None
+            #if 1 parent exists, record sha
+            elif (len(item["parents"]) == 1):
+                commit_dict["parents"] = item["parents"][0]["sha"]
+            #if 2 parents exist, records both shas separated by a comma and space
+            else:
+                commit_dict["parents"] = item["parents"][0]["sha"] + ", " + item["parents"][1]["sha"]
             #print (commit_dict)
             commit_list.append(commit_dict)
             
         return commit_list
-
+    
+    #Iterate over all pages of commit info to collect commits
     def collect_commits(self):
     
         print("Retrieve commits -> %s"  %(self.repo_url))
@@ -80,8 +92,6 @@ class RetrvCommits():
 #and save the results to a file under the project's name
 #Ex. https://api.github.com/repos/airbnb/javascript/ --> airbnb_javascript
 df = pd.read_csv('Repository_List.csv')
-repo_urls = df['url']
-repo_ids = df['id']
 
 for index, row in df.iterrows():
     RC = RetrvCommits(row['id'], row['url'] )
