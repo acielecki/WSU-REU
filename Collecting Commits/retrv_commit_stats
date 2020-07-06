@@ -81,9 +81,11 @@ class RetrvCommitStats():
                     self.parse_stats(stats_url)
         if(self.commit_stats != []):
             self.write_csv()
+            
+#Automation over all repositories
 
-df = pd.read_csv('Repository_List.csv')
+#df = pd.read_csv('Repository_List.csv')
 
-for index, row in df.iterrows():
-    RCS = RetrvCommitStats(row['id'], row['url'] )     
-    RCS.collect_commit_stats()
+#for index, row in df.iterrows():
+    #RCS = RetrvCommitStats(row['id'], row['url'] )     
+    #RCS.collect_commit_stats()
