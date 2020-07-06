@@ -89,10 +89,9 @@ class RetrvCommits():
         
         
 #Retrieve commits data for each project in Repository_List
-#and save the results to a file under the project's name
-#Ex. https://api.github.com/repos/airbnb/javascript/ --> airbnb_javascript
-df = pd.read_csv('Repository_List.csv')
+#and save the results to a file under the project's id
+#df = pd.read_csv('Repository_List.csv')
 
-for index, row in df.iterrows():
-    RC = RetrvCommits(row['id'], row['url'] )
-    RC.collect_commits()
+#for index, row in df.iterrows():
+    #RC = RetrvCommits(row['id'], row['url'] )
+    #RC.collect_commits()
