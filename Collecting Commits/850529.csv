@@ -1,0 +1,54 @@
+sha,author,date,message,commits
+de1f85986baab711ea141f4e8573628d4e8f0258,Jehiah Czebotar,2019-12-30T17:09:11Z,"Merge pull request #39 from jehiah/go_mod_39
+
+Go module support",https://api.github.com/repos/jehiah/json2csv/git/trees/88aa7424ec985b2619cff51dde7fda3c448146c4
+75d51def6b60c07031db0b483a66eca7de38193e,Jehiah Czebotar,2019-12-30T17:07:34Z,Go module support,https://api.github.com/repos/jehiah/json2csv/git/trees/88aa7424ec985b2619cff51dde7fda3c448146c4
+d40f54a3ed9c864fef7fede3cb7863d29b6d6fdd,Jehiah Czebotar,2017-03-22T07:08:51Z,"Merge pull request #32 from jehiah/bump_32
+
+Release v1.2",https://api.github.com/repos/jehiah/json2csv/git/trees/fe49e6eefdac058dbfa884842b4d1b812d2450d1
+b654775a384db9c2c491a9236413c9836115eab7,Jehiah Czebotar,2017-03-22T07:05:29Z,Bump to 1.2.0,https://api.github.com/repos/jehiah/json2csv/git/trees/fe49e6eefdac058dbfa884842b4d1b812d2450d1
+7c45cd262843296c17fd6153dc90e74bf7b69a13,Jehiah Czebotar,2016-04-01T13:59:03Z,"Merge pull request #30 from bryant1410/patch-1
+
+Output file should be csv in help",https://api.github.com/repos/jehiah/json2csv/git/trees/1a27f4f3dada4cb33d925834d88be620a423eccd
+28c27963c4b86ce26a2d44d9e3fb41b2c957e3bf,Jehiah Czebotar,2016-04-01T13:47:38Z,"Merge pull request #31 from jehiah/update_tests_31
+
+Update Tests & Travis CI version",https://api.github.com/repos/jehiah/json2csv/git/trees/93b827bc6dca71e65700efc2390fde571bf66249
+3b0b2eb8ae965080b69a48d46175b5cbc88c9333,Jehiah Czebotar,2016-04-01T13:28:00Z,update tests & go versions,https://api.github.com/repos/jehiah/json2csv/git/trees/93b827bc6dca71e65700efc2390fde571bf66249
+60ddc083f740cd4e63c5e68fb205d323c0c356b9,Santiago Castro,2016-04-01T10:40:59Z,Output file should be csv in help,https://api.github.com/repos/jehiah/json2csv/git/trees/68d6863a909c305df157edc05187b0d12add3ad7
+d82e60e6dc2a7d3bcf15314d1ecbebeffaacf0c6,Jehiah Czebotar,2015-11-24T16:40:22Z,MIT license,https://api.github.com/repos/jehiah/json2csv/git/trees/63187b2b2fe8d1d56923b77019126cc85eeb161b
+385b3206df88cb0bd8a113890d81ea335b3f5fdf,Jehiah Czebotar,2014-01-24T14:52:01Z,"Merge pull request #20 from simonschmidt/jsonerror
+
+Output line number and content on json error",https://api.github.com/repos/jehiah/json2csv/git/trees/f4199103f4a90d304bf16cb3ffb4aebb7dc9ea31
+083fe6ab8245ae48de8f3c89b3ad7658d5ca3281,Simon Schmidt,2014-01-08T10:23:29Z,Output line number and content on json error,https://api.github.com/repos/jehiah/json2csv/git/trees/f4199103f4a90d304bf16cb3ffb4aebb7dc9ea31
+f6071deca000340d33e7ecf467cdfac6669cb5d6,Jehiah Czebotar,2013-11-11T20:00:12Z,"Merge pull request #19 from modethree3/master
+
+Support for delimiter flag",https://api.github.com/repos/jehiah/json2csv/git/trees/d4ac01f340207f01aa36bbcaca0153f396319573
+55ce1f273b09adf2cf13c2f81ea78b38107b68e6,Nick Manning,2013-11-11T18:47:58Z,"Added support for a -d flag to specify a delimeter for the output .csv. Defaults to comma. If tab needed, can use -d $'\t\'",https://api.github.com/repos/jehiah/json2csv/git/trees/d4ac01f340207f01aa36bbcaca0153f396319573
+a2a6ed101f449442382ae89c2a0195847914ee1b,Jehiah Czebotar,2013-09-21T02:42:21Z,exit non-zero on errors,https://api.github.com/repos/jehiah/json2csv/git/trees/107ce2d5a368f06474564f17a39c3ffa0e3d8d33
+ebc499ba730faf94eca604d6c8bdf4a0b598cc63,Daniel Levin,2013-09-19T18:27:41Z,"Add ""-p"" to print csv header",https://api.github.com/repos/jehiah/json2csv/git/trees/6dbcfbd2e10465d61b0317932ceed53ace8d35d8
+48d9f9102cfad0cbbe2bd225e9e6332616e25872,Jehiah Czebotar,2013-08-14T00:46:50Z,"Merge pull request #11 from jeroenjanssens/master
+
+Add support for nested fields",https://api.github.com/repos/jehiah/json2csv/git/trees/ef91c42b16d4187076542c3d3f54b3c525a71ed5
+f99581b6f4590a0e0998f3ae530d1cc1d0e01287,Jeroen Janssens,2013-08-13T21:32:22Z,Updated REAMDE to reflect canonical version,https://api.github.com/repos/jehiah/json2csv/git/trees/ef91c42b16d4187076542c3d3f54b3c525a71ed5
+a7ad23333e9b4c57535b9d1005fa3410bb3ff4c3,Jeroen Janssens,2013-02-20T13:30:21Z,Add support for nested fields,https://api.github.com/repos/jehiah/json2csv/git/trees/7c887679b0f4949f6178f170c7189b1f71e8f006
+aa8c301a5c20be01dd30f0066917adb325371b00,Jehiah Czebotar,2013-01-18T21:07:19Z,"Merge pull request #8 from SeanOC/master
+
+Tweaked numerical value output",https://api.github.com/repos/jehiah/json2csv/git/trees/088b1d48ecbefc1780129b3b67b7c8507bae2fc4
+86bb4b3bfb2d4d022936487451aa0f8cfa4e4ea6,Sean O'Connor,2013-01-18T20:49:18Z,Tweaked output of numeric values to use decimal formatting instead of scientitic notation.,https://api.github.com/repos/jehiah/json2csv/git/trees/088b1d48ecbefc1780129b3b67b7c8507bae2fc4
+f6acc1f38a9e8f376a4e4008be6418136f4116ac,Jehiah Czebotar,2013-01-14T02:34:35Z,fix cmdline help text,https://api.github.com/repos/jehiah/json2csv/git/trees/a7ff721068964656e439f29f6ba9f62ec9ee52aa
+4c45ba4b75d18e414f11c2f8548d2d79f7cab6bf,Jehiah Czebotar,2013-01-14T02:33:47Z,fix install steps,https://api.github.com/repos/jehiah/json2csv/git/trees/f40a7d0f4eb886c5a8198d836a18e19ee70a0122
+5d4c81d78c063dcaf758efaed3071998394514ba,Jehiah Czebotar,2013-01-14T02:30:17Z,"Merge pull request #7 from jehiah/convert_to_golang_7
+
+convert to golang",https://api.github.com/repos/jehiah/json2csv/git/trees/5e2979f7796bd8d3d65902ae99a33024626e99a0
+328faf323fd3d185fc0edc9ea8b91822a6e573ca,Jehiah Czebotar,2013-01-14T02:26:41Z,fix loop error logic,https://api.github.com/repos/jehiah/json2csv/git/trees/5e2979f7796bd8d3d65902ae99a33024626e99a0
+83df064ac675f2950cb1a2d95001ac1a4ae57a24,Jehiah Czebotar,2013-01-14T02:11:18Z,fix handling end of input,https://api.github.com/repos/jehiah/json2csv/git/trees/24f08e932f9eb10f6b9c32cc4769e8726ff29620
+0d4b6afd3fbd14a48f389f593fb1bf0614002b62,Jehiah Czebotar,2013-01-14T02:05:23Z,handle input/output file,https://api.github.com/repos/jehiah/json2csv/git/trees/668f541c31e33959c2a903d6d89d265c8b6bd641
+ef4356ae8deb55282997bc3ed62614c1749c0d16,Jehiah Czebotar,2013-01-14T01:54:11Z,split -k command line arguments on comma,https://api.github.com/repos/jehiah/json2csv/git/trees/93151d7e196ac409c9eb066a13b107911e24dfb8
+94aff4d1c40d9e1821814de8d9503c1cc3983583,Jehiah Czebotar,2013-01-12T04:55:51Z,rm Makefile,https://api.github.com/repos/jehiah/json2csv/git/trees/a4c686bf9704bb6128174c1ef774c65487b6987d
+1d6e9653053ed33ca38cb517b35e15837583d0e5,Jehiah Czebotar,2013-01-12T04:51:02Z,readme updates,https://api.github.com/repos/jehiah/json2csv/git/trees/7a5d0eeda61e85267e15c1592dd10e85120f1ce4
+50b4013177351ea2f41a276090c79c6f14fbd6a3,Jehiah Czebotar,2013-01-12T04:47:21Z,enable travis,https://api.github.com/repos/jehiah/json2csv/git/trees/a70ba31a5fbf5cef55c065ab0182fd3cd9b06d0c
+2656661c0f19147884b6817567db6956c2047bde,Jehiah Czebotar,2013-01-12T04:31:02Z,convert to golang,https://api.github.com/repos/jehiah/json2csv/git/trees/d58f8344eacf7e7bf74dd0192e6897e60416abd0
+dead2e4328503ca39452d6dea052067a58d74e7f,Jehiah Czebotar,2013-01-12T03:12:29Z,update gitignore for go,https://api.github.com/repos/jehiah/json2csv/git/trees/e6ba7902cafac51a7e8fcb0b09893931ab3564b9
+da3803db55b75c4f5b6340015006074ba254a415,Jehiah Czebotar,2011-07-25T14:18:07Z,"increase buffer size; known issue for when record spans buffer, next line is not parsed properly",https://api.github.com/repos/jehiah/json2csv/git/trees/e8c4fe6313b7637e812b3a227f0dbe6a0527bcb7
+3c1ff8c32c0091d32d0eb69ad4f668b989e55d67,Jehiah Czebotar,2010-08-20T05:45:55Z,fix readme example,https://api.github.com/repos/jehiah/json2csv/git/trees/1cecf681c8f51ee4c85617f78c3bfc61328f3381
+55618c087f5848c7c74aa081a35341a2ac990177,Jehiah Czebotar,2010-08-20T05:33:44Z,json2csv version 1.0,https://api.github.com/repos/jehiah/json2csv/git/trees/ed4de2d978c7e48674fa79bd5f5191bf81e3b2fa
