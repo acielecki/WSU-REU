@@ -3,6 +3,7 @@ import os
 import csv
 import pandas as pd
 import json
+import mysql.connector
 
 class RetrvCommits():
 
@@ -10,8 +11,8 @@ class RetrvCommits():
         self.repo_id  = repo_id
         self.repo_url = repo_url
         
-        self.username = "********"
-        self.token = "******************************"
+        self.username = "acielecki"
+        self.token = "00f92e94cd9e2bd4d23f5307785b49b86eca18f3"
         
         self.list_of_commits = []
         
@@ -37,6 +38,39 @@ class RetrvCommits():
                 writer.writerow(row)
         csv_file.close()
 
+    def connect_to_db(self):
+        self.mydb = mysql.connector.connect(
+          host="localhost",
+          user="**************",
+          password="*************",
+          database="test"
+        )
+        
+    def write_to_db(self):
+        header = str(list(self.list_of_commits[0].keys()))
+        remove_chars = ['[', ']', '\'']
+        for char in remove_chars:
+            header = header.replace(char, '')
+            
+        columns = "sha VARCHAR(255), author VARCHAR(255), date VARCHAR(255), message VARCHAR(8000), commits VARCHAR(255), parents VARCHAR(255)"
+        table_stmnt = "CREATE TABLE IF NOT EXISTS %s (%s);" %('commits_' + str(self.repo_id), columns)
+        cursor = self.mydb.cursor()
+        cursor.execute(table_stmnt)
+        
+        for commit in self.list_of_commits:
+            row = list(commit.values())
+            sha = row[0]
+            author = str(row[1]).replace('\'', '')
+            date = row[2]
+            message = str(row[3]).replace('\'', '')
+            message = message.replace('\\', 'forwardslash')
+            commits = row[4]
+            parents = row[5]
+            insert_stmnt = "INSERT INTO %s (%s) VALUES ('%s', '%s', '%s', '%s', '%s', '%s');" % ('commits_' + str(self.repo_id), header, sha, author, date, message, commits, parents)
+            #print(insert_stmnt)
+            cursor.execute(insert_stmnt)
+            self.mydb.commit()
+            
     #collect commit information displayed on given page
     #and add it to out list of commits for the given project
     def filter_commits(self, commits):
@@ -52,13 +86,13 @@ class RetrvCommits():
             commit_dict["commits"] = item["commit"]["tree"]["url"]
             #if no parents exist, set value to none
             if (len(item["parents"]) < 1):
-               commit_dict["parents"] = None
+               commit_dict["parents"] = "None"
             #if 1 parent exists, record sha
             elif (len(item["parents"]) == 1):
                 commit_dict["parents"] = item["parents"][0]["sha"]
-            #if 2 parents exist, records both shas separated by a comma and space
+            #if 2 parents exist, records both shas separated by a dash
             else:
-                commit_dict["parents"] = item["parents"][0]["sha"] + ", " + item["parents"][1]["sha"]
+                commit_dict["parents"] = item["parents"][0]["sha"] + "-" + item["parents"][1]["sha"]
             #print (commit_dict)
             commit_list.append(commit_dict)
             
@@ -84,14 +118,18 @@ class RetrvCommits():
             page_num += 1
             if (commit_num < 100):
                 break
-       
-        self.write_csv ()
+            
+        self.write_to_db()
         
         
 #Retrieve commits data for each project in Repository_List
-#and save the results to a file under the project's id
+#and save the results to a table named commits_repo_id
+        
 #df = pd.read_csv('Repository_List.csv')
 
 #for index, row in df.iterrows():
     #RC = RetrvCommits(row['id'], row['url'] )
+    #RC.connect_to_db()
     #RC.collect_commits()
+
+
