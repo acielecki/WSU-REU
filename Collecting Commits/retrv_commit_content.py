@@ -4,13 +4,14 @@ import csv
 import pandas as pd
 import json
 import base64
+import mysql.connector
 
 class RetrvCommitContent():
     def __init__(self, repo_id):    
         self.repo_id  = repo_id 
         
-        self.username = "***********"
-        self.token = "****************************"
+        self.username = "*********"
+        self.token = "*****************************"
         
         self.commit_content = []
         
@@ -21,22 +22,32 @@ class RetrvCommitContent():
         
         return result.json()
     
-    def write_csv(self):
-        file = str(self.repo_id) + '_content' +'.csv'
-
-        with open(file, 'w', encoding='utf-8', newline="") as csv_file:
+    def connect_to_db(self):
+        self.mydb = mysql.connector.connect(
+          host="localhost",
+          user="*********",
+          password="****************************",
+          database="test"
+        )
         
-            writer = csv.writer(csv_file)
-
-            header = list(self.commit_content[0].keys()) 
-            writer.writerow(header)
+    def write_to_db(self):
+        header = str(list(self.commit_content[0].keys()))
+        remove_chars = ['[', ']', '\'']
+        for char in remove_chars:
+            header = header.replace(char, '')
             
-            for commit in self.commit_content:
-                if commit != None:
-                    row = list(commit.values())
-                    writer.writerow(row)
-        csv_file.close()
+        columns = "path VARCHAR(255), type VARCHAR(255), content TEXT"
+        table_stmnt = "CREATE TABLE IF NOT EXISTS %s (%s);" %('content_' + str(self.repo_id), columns)
+        cursor = self.mydb.cursor()
+        cursor.execute(table_stmnt)
         
+        for commit in self.commit_content:
+            row = list(commit.values())
+            insert_stmnt = "INSERT INTO %s (%s) VALUES ('%s', '%s', '%s');" % ('content_' + str(self.repo_id), header, row[0], row[1], str(row[2]).replace('\'', ''))
+            #print(insert_stmnt)
+            cursor.execute(insert_stmnt)
+            self.mydb.commit()
+            
     def parse_commits(self, commit_url):
         print("Retrieving commit content for %s"  %(commit_url))
         result = self.http_get_call(commit_url)
@@ -59,21 +70,22 @@ class RetrvCommitContent():
                 self.commit_content.append(record)
             
     def collect_commit_content(self):
-        commitsfile = self.repo_id + ".csv"
-        cdf = pd.read_csv(commitsfile)
-        urls = cdf['commits']
-        for url in urls:
-            content = self.parse_commits(url)
-        self.write_csv()
+        cursor = self.mydb.cursor()
+        select_stmnt = "SELECT commits FROM %s" % ('commits_' + str(self.repo_id))
+        cursor.execute(select_stmnt)
+        result = cursor.fetchall()
+        for commit_url in result:
+            self.parse_commits(commit_url[0])
+        self.write_to_db()
 
 #Test for a single file            
 #RCC = RetrvCommitContent('18047027')
 #RCC.collect_commit_content()
 
 #Automate for each repository
-df = pd.read_csv('Repository_List.csv')
-ids = df['id']
-
-for repo_id in ids:
-    RCC = RetrvCommitContent(str(repo_id))
-    RCC.collect_commit_content()
+#df = pd.read_csv('Repository_List.csv')
+#ids = df['id']
+#for repo_id in ids:
+    #RCC = RetrvCommitContent(str(repo_id))
+    #RCC.connect_to_db()
+    #RCC.collect_commit_content()
