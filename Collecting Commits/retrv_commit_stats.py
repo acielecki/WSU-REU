@@ -3,6 +3,7 @@ import os
 import csv
 import pandas as pd
 import json
+import mysql.connector
 
 class RetrvCommitStats():
 
@@ -10,8 +11,8 @@ class RetrvCommitStats():
             self.repo_id = repo_id
             self.repo_url = repo_url
 
-            self.username = "*******"
-            self.token = "****************************"
+            self.username = "***********"
+            self.token = "********************************"
 
             self.commit_stats = []
 
@@ -22,22 +23,40 @@ class RetrvCommitStats():
         
         return result.json()
     
-    def write_csv(self):
-        file = str(self.repo_id) + '_stats' +'.csv'
-
-        with open(file, 'w', encoding='utf-8', newline='') as csv_file:
+    def connect_to_db(self):
+        self.mydb = mysql.connector.connect(
+          host="localhost",
+          user="********",
+          password="****************",
+          database="test"
+        )
         
-            writer = csv.writer(csv_file)
-
-            header = list(self.commit_stats[0].keys()) 
-            writer.writerow(header)
+    def write_to_db(self):
+        header = str(list(self.commit_stats[0].keys()))
+        remove_chars = ['[', ']', '\'']
+        for char in remove_chars:
+            header = header.replace(char, '')
             
-            for stats in self.commit_stats:
-                if stats != None:
-                    row = list(stats.values())
-                    writer.writerow(row)
-        csv_file.close()
+        columns = "filename VARCHAR(255), status VARCHAR(255), additions INT, deletions INT, changes INT, patch TEXT, contents_url VARCHAR(255)"
+        table_stmnt = "CREATE TABLE IF NOT EXISTS %s (%s);" %('stats_' + str(self.repo_id), columns)
+        cursor = self.mydb.cursor()
+        cursor.execute(table_stmnt)
         
+        for commit in self.commit_stats:
+            row = list(commit.values())
+            filename = row[0]
+            status = row[1]
+            additions = row[2]
+            deletions = row[3]
+            changes = row[4]
+            patch = row[5]
+            patch = str(row[5]).replace('\'', '')
+            contents_url = row[6]
+            insert_stmnt = "INSERT INTO %s (%s) VALUES ('%s', '%s', '%d', '%d', '%d', '%s', '%s');" % ('stats_' + str(self.repo_id), header, filename, status, additions, deletions, changes, patch, contents_url)
+            #print(insert_stmnt)
+            cursor.execute(insert_stmnt)
+            self.mydb.commit()
+            
     #Collect statistics for all files changed in given commit
     def parse_stats(self, commit_url):
         print("Retrieving commit stats for %s"  %(commit_url))
@@ -62,30 +81,33 @@ class RetrvCommitStats():
     #collect commit statistics by constructing the url
     #which compares commits with their parent(s)
     def collect_commit_stats(self):
-        commitsfile = str(self.repo_id) + "_commits.csv"
-        cdf = pd.read_csv(commitsfile)
-        for index, row in cdf.iterrows():
+        
+        cursor = self.mydb.cursor()
+        select_stmnt = "SELECT parents, sha FROM %s" % ('commits_' + str(self.repo_id))
+        cursor.execute(select_stmnt)
+        result = cursor.fetchall()
+        for row in result:
             #if the commit is a merge with two parents
-            if(',' in str(row['parents'])):
-                parent1 = row['parents'].split(',')[0]
-                parent2 = row['parents'].split(' ')[1]
-                stats_url1 = self.repo_url + "/compare/" + parent1 + "..." + row['sha']
-                stats_url2 = self.repo_url + "/compare/" + parent2 + "..." + row['sha']
+            if('-' in str(row[0])):
+                parent1 = row[0].split('-')[0]
+                parent2 = row[0].split('-')[1]
+                stats_url1 = self.repo_url + "/compare/" + parent1 + "..." + row[1]
+                stats_url2 = self.repo_url + "/compare/" + parent2 + "..." + row[1]
                 self.parse_stats(stats_url1)
                 self.parse_stats(stats_url2)
             #only one parent
             else:
-                stats_url = self.repo_url + "/compare/" + str(row['parents']) + "..." + row['sha']
+                stats_url = self.repo_url + "/compare/" + str(row[0]) + "..." + row[1]
                 #make sure we have not reached the last commit
-                if ("nan" not in stats_url):
+                if ("None" not in stats_url):
                     self.parse_stats(stats_url)
         if(self.commit_stats != []):
-            self.write_csv()
-            
-#Automation over all repositories
+            self.write_to_db()
+
+#Automate over all Repositories in Repository_List
 
 #df = pd.read_csv('Repository_List.csv')
-
 #for index, row in df.iterrows():
-    #RCS = RetrvCommitStats(row['id'], row['url'] )     
+    #RCS = RetrvCommitStats(row['id'], row['url'] )
+    #RCS.connect_to_db()
     #RCS.collect_commit_stats()
