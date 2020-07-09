@@ -52,7 +52,7 @@ class RetrvCommits():
         for char in remove_chars:
             header = header.replace(char, '')
             
-        columns = "sha VARCHAR(255), author VARCHAR(255), date VARCHAR(255), message VARCHAR(8000), commits VARCHAR(255), parents VARCHAR(255)"
+        columns = "sha VARCHAR(255), author VARCHAR(255), date VARCHAR(255), message TEXT, commits VARCHAR(255), parents VARCHAR(255)"
         table_stmnt = "CREATE TABLE IF NOT EXISTS %s (%s);" %('commits_' + str(self.repo_id), columns)
         cursor = self.mydb.cursor()
         cursor.execute(table_stmnt)
