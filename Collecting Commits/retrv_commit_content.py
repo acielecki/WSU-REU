@@ -36,14 +36,14 @@ class RetrvCommitContent():
         for char in remove_chars:
             header = header.replace(char, '')
             
-        columns = "path VARCHAR(255), type VARCHAR(255), content TEXT"
+        columns = "sha VARCHAR (255), path VARCHAR(255), type VARCHAR(255), content TEXT"
         table_stmnt = "CREATE TABLE IF NOT EXISTS %s (%s);" %('content_' + str(self.repo_id), columns)
         cursor = self.mydb.cursor()
         cursor.execute(table_stmnt)
         
         for commit in self.commit_content:
             row = list(commit.values())
-            insert_stmnt = "INSERT INTO %s (%s) VALUES ('%s', '%s', '%s');" % ('content_' + str(self.repo_id), header, row[0], row[1], str(row[2]).replace('\'', ''))
+            insert_stmnt = "INSERT INTO %s (%s) VALUES ('%s', '%s', '%s', '%s');" % ('content_' + str(self.repo_id), header, row[0], row[1], row[2], str(row[3]).replace('\'', ''))
             #print(insert_stmnt)
             cursor.execute(insert_stmnt)
             self.mydb.commit()
@@ -63,6 +63,7 @@ class RetrvCommitContent():
                 content = base64.b64decode(content)
 
                 record = {}
+                record['sha'] = item['sha']
                 record['path'] = item['path']
                 record['type'] = item['type']
                 record['content'] = content
