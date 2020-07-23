@@ -7,12 +7,12 @@ import mysql.connector
 
 class RetrvCommitStats():
 
-    def __init__(self, repo_id, repo_url):
+    def __init__(self, repo_id, repo_url, account):
             self.repo_id = repo_id
             self.repo_url = repo_url
 
-            self.username = "***********"
-            self.token = "********************************"
+            self.username = account['username']
+            self.token = account['token']
 
             self.commit_stats = []
 
@@ -26,11 +26,10 @@ class RetrvCommitStats():
     def connect_to_db(self):
         self.mydb = mysql.connector.connect(
           host="localhost",
-          user="********",
-          password="****************",
-          database="test"
+          user="root",
+          password="************",
+          database="test1"
         )
-        
     def write_to_db(self):
         header = str(list(self.commit_stats[0].keys()))
         remove_chars = ['[', ']', '\'']
@@ -44,15 +43,7 @@ class RetrvCommitStats():
         
         for commit in self.commit_stats:
             row = list(commit.values())
-            filename = row[0]
-            status = row[1]
-            additions = row[2]
-            deletions = row[3]
-            changes = row[4]
-            patch = row[5]
-            patch = str(row[5]).replace('\'', '')
-            contents_url = row[6]
-            insert_stmnt = "INSERT INTO %s (%s) VALUES ('%s', '%s', '%d', '%d', '%d', '%s', '%s');" % ('stats_' + str(self.repo_id), header, filename, status, additions, deletions, changes, patch, contents_url)
+            insert_stmnt = "INSERT INTO %s (%s) VALUES ('%s', '%s', '%d', '%d', '%d', '%s', '%s');" % ('stats_' + str(self.repo_id), header, row[0], row[1], row[2], row[3], row[4], str(row[5]).replace('\'', ''), row[6])
             #print(insert_stmnt)
             cursor.execute(insert_stmnt)
             self.mydb.commit()
@@ -104,10 +95,13 @@ class RetrvCommitStats():
         if(self.commit_stats != []):
             self.write_to_db()
 
+
 #Automate over all Repositories in Repository_List
 
 #df = pd.read_csv('Repository_List.csv')
+#account = {'username': 'acielecki', 'token': '************************'}
 #for index, row in df.iterrows():
-    #RCS = RetrvCommitStats(row['id'], row['url'] )
+    #RCS = RetrvCommitStats(row['id'], row['url'], account)
     #RCS.connect_to_db()
     #RCS.collect_commit_stats()
+
