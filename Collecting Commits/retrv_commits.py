@@ -7,12 +7,12 @@ import mysql.connector
 
 class RetrvCommits():
 
-    def __init__(self, repo_id, repo_url):    
+    def __init__(self, repo_id, repo_url, account):    
         self.repo_id  = repo_id
         self.repo_url = repo_url
         
-        self.username = "acielecki"
-        self.token = "00f92e94cd9e2bd4d23f5307785b49b86eca18f3"
+        self.username = account['username']
+        self.token = account['token']
         
         self.list_of_commits = []
         
@@ -41,9 +41,9 @@ class RetrvCommits():
     def connect_to_db(self):
         self.mydb = mysql.connector.connect(
           host="localhost",
-          user="**************",
-          password="*************",
-          database="test"
+          user="root",
+          password="************",
+          database="test1"
         )
         
     def write_to_db(self):
@@ -126,9 +126,9 @@ class RetrvCommits():
 #and save the results to a table named commits_repo_id
         
 #df = pd.read_csv('Repository_List.csv')
-
+#account = {'username': 'acielecki', 'token': '****************************'}
 #for index, row in df.iterrows():
-    #RC = RetrvCommits(row['id'], row['url'] )
+    #RC = RetrvCommits(row['id'], row['url'], account)
     #RC.connect_to_db()
     #RC.collect_commits()
 
